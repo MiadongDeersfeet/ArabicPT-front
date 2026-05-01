@@ -2,6 +2,7 @@ import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout.jsx'
 import Home from './pages/Home.jsx'
+import SentenceStudy from './pages/SentenceStudy.jsx'
 import UiKit from './pages/UiKit.jsx'
 
 function App() {
@@ -12,6 +13,14 @@ function App() {
         element={
           <Layout>
             <Home />
+          </Layout>
+        }
+      />
+      <Route
+        path="/study/sentences"
+        element={
+          <Layout>
+            <SentenceStudy />
           </Layout>
         }
       />

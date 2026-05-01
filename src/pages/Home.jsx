@@ -16,9 +16,9 @@ function Home() {
       <section className="container">
         <div className="introCard" role="region" aria-label="학습 소개">
           <h2>모바일 퍼스트 학습 카드</h2>
-          <button type="button" className="primaryButton">
+          <Link to="/study/sentences" className="primaryButton">
             학습 시작하기
-          </button>
+          </Link>
           <Link to="/ui-kit" className="textLink">
             공용 UI 컴포넌트
           </Link>
