@@ -16,15 +16,11 @@ function Home() {
       <section className="container">
         <div className="introCard" role="region" aria-label="학습 소개">
           <h2>모바일 퍼스트 학습 카드</h2>
-          <p>
-            iPhone, iPad, Android 폰/태블릿, 데스크톱 웹에서 모두 편하게 사용할 수 있도록
-            설계했습니다. 모바일 1열 레이아웃에서 시작해 큰 화면에서는 다열로 확장됩니다.
-          </p>
           <button type="button" className="primaryButton">
             학습 시작하기
           </button>
           <Link to="/ui-kit" className="textLink">
-            공용 UI 컴포넌트 가이드 보기
+            공용 UI 컴포넌트
           </Link>
         </div>
       </section>

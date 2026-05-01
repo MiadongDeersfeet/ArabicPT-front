@@ -27,7 +27,11 @@ function Header() {
   return (
     <header className="siteHeader">
       <div className="container siteHeaderInner">
-        <div className="headerSlot" aria-hidden="true" />
+        <Link to="/" className="headerHomeLink" aria-label="홈으로 이동">
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+            <path d="M12 3.5 4 10v10.5h5.5v-6h5v6H20V10l-8-6.5Z" />
+          </svg>
+        </Link>
 
         <Link to="/" className="siteBrandLink">
           ArabicPT
@@ -47,15 +51,6 @@ function Header() {
           </button>
 
           <div className={`headerDropdownPanel${isOpen ? ' open' : ''}`}>
-            <nav className="siteNav" aria-label="주요 메뉴">
-              <Link to="/" onClick={() => setIsOpen(false)}>
-                홈
-              </Link>
-              <Link to="/ui-kit" onClick={() => setIsOpen(false)}>
-                UI 가이드
-              </Link>
-            </nav>
-
             <div className="siteActions">
               <button type="button" className="headerGhostButton">
                 로그인
