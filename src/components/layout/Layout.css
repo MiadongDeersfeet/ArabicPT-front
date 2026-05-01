@@ -1,0 +1,22 @@
+.layoutShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layoutMain {
+  flex: 1;
+  padding: 16px 0 24px;
+}
+
+@media (min-width: 768px) {
+  .layoutMain {
+    padding: 20px 0 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .layoutMain {
+    padding: 24px 0 40px;
+  }
+}

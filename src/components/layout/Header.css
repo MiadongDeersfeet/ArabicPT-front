@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+
+.siteHeader {
+  padding: 16px 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.siteHeaderInner {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+}
+
+.headerSlot {
+  width: 44px;
+  height: 44px;
+}
+
+.siteBrandLink {
+  justify-self: center;
+  text-align: center;
+  font-size: 1.45rem;
+  font-family: 'Nunito', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #008b5a;
+}
+
+.headerDropdown {
+  position: relative;
+  justify-self: end;
+}
+
+.headerMenuButton {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  display: inline-grid;
+  place-content: center;
+  gap: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.headerMenuButton span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: #008b5a;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+  transform-origin: center;
+}
+
+.headerMenuButton.open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.headerMenuButton.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.headerMenuButton.open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.headerDropdownPanel {
+  margin-top: 8px;
+  padding: 12px;
+  width: min(82vw, 280px);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.1);
+  position: absolute;
+  right: 0;
+  z-index: 20;
+  display: none;
+}
+
+.headerDropdownPanel.open {
+  display: block;
+}
+
+.siteNav {
+  display: grid;
+  gap: 6px;
+}
+
+.siteNav a {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #374151;
+  background: #f8fafc;
+}
+
+.siteActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.headerGhostButton,
+.headerPrimaryButton {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.headerGhostButton {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+}
+
+.headerPrimaryButton {
+  border: none;
+  background: #008b5a;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .siteHeader {
+    padding: 20px 0;
+  }
+
+  .siteBrandLink {
+    font-size: 1.5rem;
+  }
+}

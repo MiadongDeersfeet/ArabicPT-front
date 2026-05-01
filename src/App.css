@@ -1,0 +1,334 @@
+.container {
+  width: min(100% - 32px, 1200px);
+  margin: 0 auto;
+}
+
+.introCard,
+.learningCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.introCard h2,
+.sectionTitle {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+
+.introCard p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+  color: #374151;
+  overflow-wrap: anywhere;
+}
+
+.arabicSample {
+  text-align: right;
+}
+
+.primaryButton {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.primaryButton:active {
+  background: #115e59;
+}
+
+.primaryButton:disabled {
+  background: #9ca3af;
+  color: #f3f4f6;
+}
+
+.buttonRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.uiButton {
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+.uiButton--primary {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.uiButton--secondary {
+  background: #e6fffb;
+  color: #115e59;
+  border: 1px solid #99f6e4;
+}
+
+.uiButton:disabled {
+  background: #d1d5db;
+  color: #f9fafb;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.uiField {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.uiFieldLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.uiInput {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.uiHint {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.sentenceBox {
+  background: #ffffff;
+  border: 1px solid #e9ebf3;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.06);
+  overflow: hidden;
+}
+
+.sentenceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef1f9;
+}
+
+.sentenceStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a5d0a;
+  font-size: 0.9rem;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.sentenceProgress {
+  color: #059669;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.sentenceBody {
+  min-height: 230px;
+  padding: 18px 16px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hintButton {
+  align-self: flex-start;
+  min-height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: #f8fafc;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.sentenceText {
+  margin: auto 0;
+  text-align: center;
+  font-size: clamp(1.25rem, 3.8vw, 1.9rem);
+  line-height: 1.65;
+  color: #111827;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.sentenceText[dir='rtl'] {
+  text-align: center;
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+}
+
+.sentenceBottomBar {
+  min-height: 38px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #e9e9ff;
+  color: #374151;
+  font-size: 0.82rem;
+}
+
+.sentenceBottomBar kbd {
+  padding: 2px 8px;
+  border: 1px solid #c7c9f5;
+  border-radius: 8px;
+  background: #f8f8ff;
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.sentencePreviewGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.studyCardFooter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.studyCircleButton {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 1.5rem;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.08);
+}
+
+.studyCircleButton:active {
+  transform: scale(0.97);
+}
+
+.studyCircleButton--wrong {
+  color: #b45309;
+}
+
+.studyCircleButton--correct {
+  color: #059669;
+}
+
+.uiCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.uiCard h3 {
+  margin: 0 0 8px;
+}
+
+.uiCard p {
+  margin: 0;
+  color: #374151;
+}
+
+.uiCard small {
+  display: block;
+  margin-top: 10px;
+  color: #6b7280;
+}
+
+.textLink {
+  display: inline-flex;
+  margin-top: 12px;
+  color: #0f766e;
+  font-weight: 600;
+  min-height: 44px;
+  align-items: center;
+}
+
+.sectionSpacing {
+  margin-top: 16px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.learningCard h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.learningCard p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .introCard,
+  .learningCard {
+    padding: 20px;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .buttonRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sentencePreviewGrid {
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sentencePreviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .introCard p,
+  .learningCard p {
+    font-size: 1.05rem;
+  }
+}
