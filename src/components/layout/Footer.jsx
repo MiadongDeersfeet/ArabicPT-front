@@ -6,7 +6,7 @@ function Footer() {
       <div className="container siteFooterInner">
         <div>
           <strong>ArabicPT</strong>
-          <p>모바일 퍼스트 아랍어 학습 서비스</p>
+          <p>아나 누르 윤기맨</p>
         </div>
 
         <div className="siteFooterLinks">

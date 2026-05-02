@@ -204,7 +204,7 @@
 .sentenceText {
   margin: auto 0;
   text-align: center;
-  font-size: clamp(1.25rem, 3.8vw, 1.9rem);
+  font-size: clamp(1.45rem, 4.5vw, 2.25rem);
   line-height: 1.65;
   color: #111827;
   overflow-wrap: anywhere;
@@ -214,6 +214,7 @@
 .sentenceText[dir='rtl'] {
   text-align: center;
   font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  font-weight: 700;
 }
 
 .sentenceBottomBar {
@@ -310,6 +311,10 @@
 }
 
 .studyPageIntro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -320,6 +325,171 @@
 .studyPageIntro p {
   margin: 0;
   color: #6b7280;
+}
+
+.countdownControlPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.countToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.countToggleLabel {
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #4b5563;
+}
+
+.countToggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.countToggleTrack {
+  position: relative;
+  width: 72px;
+  height: 34px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+
+.countToggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.countToggleState {
+  margin-left: 22px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.countToggle input:checked + .countToggleTrack {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #059669;
+}
+
+.countToggle input:checked + .countToggleTrack .countToggleThumb {
+  transform: translateX(37px);
+}
+
+.countToggle input:checked + .countToggleTrack .countToggleState {
+  color: #ecfdf5;
+}
+
+.countStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+}
+
+.countStepperButton {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.countStepperButton:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.countStepperButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.countStepperValue {
+  width: 54px;
+  min-height: 30px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 4px 8px;
+}
+
+.studyCountdown {
+  margin: 14px 0 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+  text-align: center;
+}
+
+.studyCountdownInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px 10px;
+}
+
+.studyCountdownValue {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.25rem, 8vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  color: #047857;
+}
+
+.studyCountdownUnit {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.studyCountdownLabel {
+  width: 100%;
+  font-size: 0.95rem;
+  color: #374151;
+  margin-top: 4px;
+}
+
+.studyCountdownHint {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #4b5563;
 }
 
 .studyMeaningCard {
@@ -398,6 +568,75 @@
   .sentencePreviewGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@media (max-width: 520px) {
+  .studyPageIntro {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .countdownControlPanel {
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .studyPageIntro h2 {
+    margin-bottom: 2px;
+    font-size: 1.15rem;
+  }
+
+  .studyPageIntro p {
+    font-size: 0.82rem;
+  }
+
+  .countToggle {
+    gap: 8px;
+  }
+
+  .countToggleLabel {
+    font-size: 0.78rem;
+  }
+
+  .countToggleTrack {
+    width: 62px;
+    height: 30px;
+  }
+
+  .countToggleThumb {
+    top: 2px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .countToggleState {
+    margin-left: 18px;
+    font-size: 0.67rem;
+  }
+
+  .countToggle input:checked + .countToggleTrack .countToggleThumb {
+    transform: translateX(31px);
+  }
+
+  .countStepper {
+    gap: 6px;
+    padding: 3px;
+  }
+
+  .countStepperButton {
+    width: 26px;
+    height: 26px;
+    font-size: 1rem;
+  }
+
+  .countStepperValue {
+    width: 46px;
+    min-height: 26px;
+    padding: 2px 6px;
+    font-size: 0.84rem;
+  }
+
 }
 
 @media (min-width: 1280px) {
