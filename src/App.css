@@ -51,6 +51,11 @@
   color: #f3f4f6;
 }
 
+a.primaryButton {
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
 .buttonRow {
   display: grid;
   grid-template-columns: 1fr;
@@ -85,6 +90,10 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
+}
+
+.libraryCreateFormOnly {
+  grid-template-columns: 1fr;
 }
 
 .uiField {
@@ -306,6 +315,26 @@
   align-items: center;
 }
 
+.homeIntroLinks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.homeIntroLinks .textLink {
+  margin-top: 0;
+}
+
+.homeIntroHint {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
 .sectionSpacing {
   margin-top: 16px;
 }
@@ -324,6 +353,97 @@
 
 .studyPageIntro p {
   margin: 0;
+  color: #6b7280;
+}
+
+.studyPageIntroHeadingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.studySettingsWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.studySettingsButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #4b5563;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.06);
+}
+
+.studySettingsButton:hover {
+  color: #0f766e;
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.studySettingsButton:focus-visible {
+  outline: 2px solid #008b5a;
+  outline-offset: 2px;
+}
+
+.studySettingsIcon {
+  display: block;
+}
+
+.studySettingsMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 228px;
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+  z-index: 20;
+}
+
+.studySettingsMenuItem {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.studySettingsMenuItem:hover {
+  background: #f0fdfa;
+}
+
+.studySettingsMenuItem--disabled {
+  color: #9ca3af;
+  font-weight: 500;
+  cursor: default;
+  pointer-events: none;
+}
+
+.studySettingsMenuHint {
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #6b7280;
 }
 
@@ -537,7 +657,505 @@
   overflow-wrap: anywhere;
 }
 
+.libraryTopActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 4px;
+}
+
+.libraryTopActions .textLink {
+  margin-top: 0;
+}
+
+.libraryStatusText {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.libraryFolderCardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.libraryFolderIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.libraryFolderBadge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.librarySectionTitle {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.libraryCreateSection {
+  margin-top: 12px;
+}
+
+.libraryCreateHint {
+  margin: 0 0 12px;
+  color: #4b5563;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.libraryTextarea {
+  min-height: 88px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.libraryRequired {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.libraryFormError {
+  margin: 0;
+  color: #b45309;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.librarySentenceBlock {
+  margin-top: 16px;
+}
+
+.librarySentenceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.librarySentenceRow {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.04);
+}
+
+.librarySentenceMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.librarySentenceFolder {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.librarySentenceLangs {
+  font-variant-numeric: tabular-nums;
+}
+
+.librarySentenceFront {
+  margin: 0 0 6px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: #111827;
+}
+
+.librarySentenceBack {
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  color: #374151;
+}
+
+.librarySentenceMemo {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.libraryPolicyHint {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.librarySetCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.librarySetCard {
+  height: 100%;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.librarySetCardLink:hover .librarySetCard,
+.librarySetCardLink:focus-visible .librarySetCard {
+  border-color: #99f6e4;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.12);
+}
+
+.librarySetCardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.librarySetMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.librarySetMetaItem {
+  font-variant-numeric: tabular-nums;
+}
+
+.libraryFoldersSection {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.librarySubSectionTitle {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.libraryFolderCreateCard {
+  margin-bottom: 16px;
+}
+
+.learningCard.libraryFolderCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.learningCard.libraryFolderCard:hover,
+.learningCard.libraryFolderCard:focus-within {
+  border-color: #99f6e4;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.12);
+}
+
+.libraryFolderCardMainLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  flex: 1 1 auto;
+}
+
+.libraryFolderCardMainLink:hover .libraryFolderCardHead h3,
+.libraryFolderCardMainLink:focus-visible .libraryFolderCardHead h3 {
+  color: #0f766e;
+}
+
+.libraryFolderCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.libraryFolderDetailManage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 14px;
+}
+
+.librarySetManageSection {
+  margin-top: 12px;
+}
+
+.librarySetManageRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.libraryFolderMoveField {
+  margin-top: 0;
+}
+
+.librarySelect {
+  font: inherit;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.libraryDangerButton {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid #f87171;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.libraryDangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.libraryModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.libraryModal {
+  width: min(100%, 440px);
+  max-height: min(88vh, 640px);
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.libraryModalTitle {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.libraryModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.libraryStudyLink {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.librarySentenceActions,
+.libraryEditActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.libraryEditForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.studyBackToSetLink {
+  display: inline-flex;
+  margin-top: 6px;
+  font-size: 0.88rem;
+}
+
+.libraryCreateSetLink {
+  margin-top: 10px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.createSetPage {
+  padding-bottom: 24px;
+}
+
+.createSetHeader {
+  margin-bottom: 16px;
+}
+
+.createSetBackLink {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.createSetTitle {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+.createSetMetaCard {
+  margin-bottom: 16px;
+}
+
+.createSetDescArea {
+  resize: vertical;
+  min-height: 52px;
+}
+
+.createSetSelect {
+  font-size: 1rem;
+}
+
+.createSetCardsSection {
+  margin-top: 8px;
+}
+
+.createSetCardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.createSetCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.createSetCardToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.createSetCardNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.createSetCardRemove {
+  border: none;
+  background: transparent;
+  color: #b45309;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.createSetCardRemove:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.createSetCardFields {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+.createSetMemoField {
+  margin-top: 4px;
+}
+
+.createSetAddCardBtn {
+  margin-top: 14px;
+  width: 100%;
+}
+
+.createSetError {
+  margin-top: 14px;
+}
+
+.createSetActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.createSetActions .primaryButton,
+.createSetActions .uiButton {
+  width: 100%;
+  justify-content: center;
+}
+
+.createSetActionStudy {
+  min-height: 44px;
+}
+
 @media (min-width: 768px) {
+  .createSetCardFields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .createSetActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .createSetActions .primaryButton,
+  .createSetActions .uiButton {
+    width: auto;
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .createSetAddCardBtn {
+    width: auto;
+  }
+
   .introCard,
   .learningCard {
     padding: 20px;
@@ -553,6 +1171,10 @@
 
   .formGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .libraryCreateFormOnly {
+    grid-template-columns: 1fr;
   }
 
   .sentencePreviewGrid {

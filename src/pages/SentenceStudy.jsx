@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
-import { sentenceDummyData } from '../data/sentences/sentenceDummyData.js'
-import { playCountdownTick, resumeCountdownAudio } from '../utils/countdownAudio.js'
+import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
+import { useParams, Link } from 'react-router-dom'
+import { getSentencesBySet } from '../api/sentenceApi.js'
+import { resumeCountdownAudio } from '../utils/countdownAudio.js'
+import { useSentenceCountdown } from '../hooks/useSentenceCountdown.js'
+import { useLongPressAdjust } from '../hooks/useLongPressAdjust.js'
 
 const AUTO_FLIP_SECONDS = 10
 const MIN_COUNTDOWN_SECONDS = 5
@@ -10,31 +14,135 @@ const LONG_PRESS_DELAY_MS = 350
 const LONG_PRESS_INTERVAL_MS = 170
 const LONG_PRESS_STEP_SECONDS = 5
 
-const clampCountdownSeconds = (value) => {
-  if (!Number.isFinite(value)) return AUTO_FLIP_SECONDS
-  return Math.min(MAX_COUNTDOWN_SECONDS, Math.max(MIN_COUNTDOWN_SECONDS, value))
+const CARD_SIDE_ORDER_STORAGE_KEY = 'arabicpt.sentenceStudy.cardSideOrder'
+
+function readCardSideReversed() {
+  try {
+    return localStorage.getItem(CARD_SIDE_ORDER_STORAGE_KEY) === 'reversed'
+  } catch {
+    return false
+  }
+}
+
+function persistCardSideReversed(reversed) {
+  try {
+    localStorage.setItem(CARD_SIDE_ORDER_STORAGE_KEY, reversed ? 'reversed' : 'default')
+  } catch {
+    /* ignore */
+  }
+}
+
+function resolveCardSides(sentence, reversed) {
+  if (!sentence) {
+    return { frontText: '', backText: '', frontDir: 'ltr', backDir: 'ltr' }
+  }
+  const isRtl = (lang) => typeof lang === 'string' && lang.toLowerCase().includes('ar')
+
+  const apiFront = {
+    text: sentence.frontText,
+    dir: isRtl(sentence.frontLang) ? 'rtl' : 'ltr',
+  }
+  const apiBack = {
+    text: sentence.backText,
+    dir: isRtl(sentence.backLang) ? 'rtl' : 'ltr',
+  }
+  if (!reversed) {
+    return {
+      frontText: apiFront.text,
+      backText: apiBack.text,
+      frontDir: apiFront.dir,
+      backDir: apiBack.dir,
+    }
+  }
+  return {
+    frontText: apiBack.text,
+    backText: apiFront.text,
+    frontDir: apiBack.dir,
+    backDir: apiFront.dir,
+  }
 }
 
 function SentenceStudy() {
-  const holdTimeoutRef = useRef(null)
-  const holdIntervalRef = useRef(null)
-  const didLongPressRef = useRef(false)
+  const { setId } = useParams()
+  const setIdNum = Number(setId)
+  const setIdValid = Number.isInteger(setIdNum) && setIdNum > 0
+
+  const [sentences, setSentences] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
-  const [countdownEnabled, setCountdownEnabled] = useState(true)
-  const [countdownSeconds, setCountdownSeconds] = useState(AUTO_FLIP_SECONDS)
-  const [allowCountdown, setAllowCountdown] = useState(true)
-  const [secondsLeft, setSecondsLeft] = useState(AUTO_FLIP_SECONDS)
-  const current = sentenceDummyData[currentIndex]
-  const isCountdownRunning = countdownEnabled && !isFlipped && allowCountdown
+  const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
+  const currentSentence = sentences[currentIndex]
+  const cardSides = resolveCardSides(currentSentence, cardSideReversed)
+
+  const toggleCardSideOrder = useCallback(() => {
+    setCardSideReversed((prev) => {
+      const next = !prev
+      persistCardSideReversed(next)
+      return next
+    })
+    setIsFlipped(false)
+  }, [])
+  const handleAutoFlip = useCallback(() => {
+    setIsFlipped(true)
+  }, [])
+  const {
+    countdownEnabled,
+    countdownSeconds,
+    secondsLeft,
+    allowCountdown,
+    isCountdownRunning,
+    setAllowCountdown,
+    handleCountdownToggle,
+    handleCountdownSecondsChange,
+    adjustCountdownSeconds,
+  } = useSentenceCountdown({
+    isFlipped,
+    currentIndex,
+    defaultSeconds: AUTO_FLIP_SECONDS,
+    minSeconds: MIN_COUNTDOWN_SECONDS,
+    maxSeconds: MAX_COUNTDOWN_SECONDS,
+    onAutoFlip: handleAutoFlip,
+  })
 
   useEffect(() => {
-    setAllowCountdown(true)
-  }, [currentIndex])
+    let isMounted = true
 
-  useEffect(() => {
-    setSecondsLeft(countdownSeconds)
-  }, [countdownSeconds, currentIndex])
+    const fetchSentences = async () => {
+      if (!setIdValid) {
+        setLoading(false)
+        setSentences([])
+        setError(false)
+        return
+      }
+      setLoading(true)
+      setError(false)
+
+      try {
+        const sentenceList = await getSentencesBySet(setIdNum)
+        if (isMounted) {
+          setSentences(Array.isArray(sentenceList) ? sentenceList : [])
+        }
+      } catch (fetchError) {
+        console.error(fetchError)
+        if (isMounted) {
+          setSentences([])
+          setError(true)
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchSentences()
+
+    return () => {
+      isMounted = false
+    }
+  }, [setIdNum, setIdValid])
 
   useEffect(() => {
     const unlock = () => {
@@ -42,120 +150,48 @@ function SentenceStudy() {
     }
     window.addEventListener('pointerdown', unlock, { passive: true })
     return () => window.removeEventListener('pointerdown', unlock)
-  }, [])
+  }, [setAllowCountdown])
+
+  useEffect(() => {
+    setCurrentIndex(0)
+    setIsFlipped(false)
+  }, [setIdNum, setIdValid])
+
+  useEffect(() => {
+    if (currentIndex >= sentences.length && sentences.length > 0) {
+      setCurrentIndex(0)
+      setIsFlipped(false)
+    }
+  }, [currentIndex, sentences.length])
 
   const goPrev = () => {
+    if (sentences.length === 0) return
     setIsFlipped(false)
-    setCurrentIndex((prev) => (prev === 0 ? sentenceDummyData.length - 1 : prev - 1))
+    setCurrentIndex((prev) => (prev === 0 ? sentences.length - 1 : prev - 1))
   }
 
   const goNext = () => {
+    if (sentences.length === 0) return
     setIsFlipped(false)
-    setCurrentIndex((prev) => (prev === sentenceDummyData.length - 1 ? 0 : prev + 1))
+    setCurrentIndex((prev) => (prev === sentences.length - 1 ? 0 : prev + 1))
   }
 
   const flipCard = useCallback(() => {
     setIsFlipped((prev) => {
       if (prev) {
+        // 뒷면에서 앞면으로 돌아올 때는 자동 카운트를 멈춥니다.
         setAllowCountdown(false)
       }
       return !prev
     })
   }, [])
-
-  const handleCountdownToggle = (event) => {
-    const enabled = event.target.checked
-    setCountdownEnabled(enabled)
-    if (!enabled) {
-      setSecondsLeft(countdownSeconds)
-    }
-  }
-
-  const handleCountdownSecondsChange = (event) => {
-    const value = Number.parseInt(event.target.value, 10)
-    const nextSeconds = clampCountdownSeconds(value)
-    setCountdownSeconds(nextSeconds)
-    if (!isFlipped) {
-      setSecondsLeft(nextSeconds)
-    }
-  }
-
-  const adjustCountdownSeconds = (delta) => {
-    if (!countdownEnabled) return
-    if (isCountdownRunning) return
-    setCountdownSeconds((prev) => {
-      const next = clampCountdownSeconds(prev + delta)
-      if (!isFlipped) {
-        setSecondsLeft(next)
-      }
-      return next
-    })
-  }
-
-  const stopLongPressAdjust = useCallback(() => {
-    if (holdTimeoutRef.current) {
-      window.clearTimeout(holdTimeoutRef.current)
-      holdTimeoutRef.current = null
-    }
-    if (holdIntervalRef.current) {
-      window.clearInterval(holdIntervalRef.current)
-      holdIntervalRef.current = null
-    }
-  }, [])
-
-  const startLongPressAdjust = useCallback(
-    (delta, event) => {
-      if (!countdownEnabled) return
-      if (event.pointerType === 'mouse' && event.button !== 0) return
-
-      didLongPressRef.current = false
-      stopLongPressAdjust()
-      holdTimeoutRef.current = window.setTimeout(() => {
-        didLongPressRef.current = true
-        adjustCountdownSeconds(delta * LONG_PRESS_STEP_SECONDS)
-        holdIntervalRef.current = window.setInterval(() => {
-          adjustCountdownSeconds(delta * LONG_PRESS_STEP_SECONDS)
-        }, LONG_PRESS_INTERVAL_MS)
-      }, LONG_PRESS_DELAY_MS)
-    },
-    [countdownEnabled, stopLongPressAdjust],
-  )
-
-  const handleStepButtonClick = (delta) => {
-    if (didLongPressRef.current) {
-      didLongPressRef.current = false
-      return
-    }
-    adjustCountdownSeconds(delta)
-  }
-
-  useEffect(() => {
-    return () => {
-      stopLongPressAdjust()
-    }
-  }, [stopLongPressAdjust])
-
-  useEffect(() => {
-    if (isFlipped) return
-    if (!countdownEnabled) return
-    if (!allowCountdown) return
-
-    setSecondsLeft(countdownSeconds)
-    const id = window.setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          playCountdownTick(0)
-          setIsFlipped(true)
-          return 0
-        }
-        const next = s - 1
-        playCountdownTick(next)
-        return next
-      })
-    }, 1000)
-
-    return () => window.clearInterval(id)
-  }, [currentIndex, isFlipped, allowCountdown, countdownEnabled, countdownSeconds])
+  const { startLongPressAdjust, stopLongPressAdjust, handleStepButtonClick } = useLongPressAdjust({
+    enabled: countdownEnabled,
+    longPressDelayMs: LONG_PRESS_DELAY_MS,
+    longPressIntervalMs: LONG_PRESS_INTERVAL_MS,
+    longPressStep: LONG_PRESS_STEP_SECONDS,
+    onAdjust: adjustCountdownSeconds,
+  })
 
   useEffect(() => {
     const handleSpaceFlip = (event) => {
@@ -178,14 +214,34 @@ function SentenceStudy() {
     return () => window.removeEventListener('keydown', handleSpaceFlip)
   }, [flipCard])
 
+  if (!setIdValid) {
+    return (
+      <section className="container sectionSpacing">
+        <div className="introCard">
+          <h2>문장 세트를 선택해 주세요</h2>
+          <p>라이브러리에서 문장 세트를 고른 뒤 학습을 시작할 수 있습니다.</p>
+          <Link to="/library" className="textLink">
+            라이브러리로 이동
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="container">
       <div className="studyPageIntro">
-        <div>
-          <h2>문장 학습</h2>
-          <p>
-            {currentIndex + 1} / {sentenceDummyData.length} 문장
-          </p>
+        <div className="studyPageIntroHeadingRow">
+          <div>
+            <h2>문장 학습</h2>
+            <p>
+              {sentences.length === 0 ? 0 : currentIndex + 1} / {sentences.length} 문장
+            </p>
+            <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
+              ← 문장 세트로
+            </Link>
+          </div>
+          <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
         </div>
         <div className="countdownControlPanel">
           <label className="countToggle" aria-label="Count ON/OFF">
@@ -241,35 +297,53 @@ function SentenceStudy() {
       {countdownEnabled ? (
         <div className="studyCountdown" aria-live="polite">
           {isFlipped ? (
-            <p className="studyCountdownHint">한국어를 다시 보려면 카드를 뒤집으세요.</p>
+            <p className="studyCountdownHint">앞면을 다시 보려면 카드를 뒤집으세요.</p>
           ) : allowCountdown ? (
             <div className="studyCountdownInner">
               <span className="studyCountdownValue">{secondsLeft}</span>
               <span className="studyCountdownUnit">초</span>
             </div>
           ) : (
-            <p className="studyCountdownHint">아랍어를 다시 보려면 카드를 뒤집으세요.</p>
+            <p className="studyCountdownHint">뒷면을 다시 보려면 카드를 뒤집으세요.</p>
           )}
         </div>
       ) : null}
 
-      <SentenceBox
-        title="문장 학습 카드"
-        status="학습 중"
-        progress={`문장 ${currentIndex + 1}`}
-        frontText={current.korean}
-        backText={current.arabic}
-        frontDir="ltr"
-        backDir="rtl"
-        isFlipped={isFlipped}
-        onFlip={flipCard}
-      />
+      {loading ? (
+        <SentenceBox title="문장 학습 카드" status="학습 중" progress="로딩" text="문장을 불러오는 중입니다." />
+      ) : error ? (
+        <SentenceBox
+          title="문장 학습 카드"
+          status="오류"
+          progress="불러오기 실패"
+          text="문장을 불러오지 못했습니다."
+        />
+      ) : sentences.length === 0 ? (
+        <SentenceBox
+          title="문장 학습 카드"
+          status="학습 중"
+          progress="문장 없음"
+          text="아직 등록된 문장이 없습니다."
+        />
+      ) : (
+        <SentenceBox
+          title="문장 학습 카드"
+          status="학습 중"
+          progress={`문장 ${currentIndex + 1}`}
+          frontText={cardSides.frontText}
+          backText={cardSides.backText}
+          frontDir={cardSides.frontDir}
+          backDir={cardSides.backDir}
+          isFlipped={isFlipped}
+          onFlip={flipCard}
+        />
+      )}
 
       <div className="studyActionRow">
-        <button type="button" className="headerGhostButton" onClick={goPrev}>
+        <button type="button" className="headerGhostButton" onClick={goPrev} disabled={loading || sentences.length === 0}>
           이전 문장
         </button>
-        <button type="button" className="headerPrimaryButton" onClick={goNext}>
+        <button type="button" className="headerPrimaryButton" onClick={goNext} disabled={loading || sentences.length === 0}>
           다음 문장
         </button>
       </div>

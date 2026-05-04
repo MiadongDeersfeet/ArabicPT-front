@@ -16,12 +16,18 @@ function Home() {
       <section className="container">
         <div className="introCard" role="region" aria-label="학습 소개">
           <h2>모바일 퍼스트 학습 카드</h2>
-          <Link to="/study/sentences" className="primaryButton">
-            학습 시작하기
+          <Link to="/library" className="primaryButton">
+            내 문장 세트
           </Link>
-          <Link to="/ui-kit" className="textLink">
-            공용 UI 컴포넌트
-          </Link>
+          <div className="homeIntroLinks">
+            <span className="homeIntroHint">문장 세트를 선택한 뒤 학습을 시작하세요.</span>
+            <Link to="/library" className="textLink">
+              라이브러리
+            </Link>
+            <Link to="/ui-kit" className="textLink">
+              공용 UI 컴포넌트
+            </Link>
+          </div>
         </div>
       </section>
 

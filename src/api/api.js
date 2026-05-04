@@ -51,15 +51,6 @@ export const getWordQuizByCategory = (categoryId) =>
 export const submitQuizAnswer = (data) => axiosInstance.post('/api/quizzes/submit', data)
 
 /**
- * 상황별 회화 문장 목록 조회
- * 회화 학습 화면에서 문장 카드를 불러올 때 사용합니다.
- */
-export const getSentenceCards = (situationId) =>
-  axiosInstance.get('/api/sentences', {
-    params: { situationId },
-  })
-
-/**
  * 관리자 단어 등록 요청
  * 관리자 화면에서 새 단어를 등록할 때 사용합니다.
  */
