@@ -12,7 +12,7 @@ function makeCardId() {
 }
 
 function emptyCard() {
-  return { id: makeCardId(), frontText: '', backText: '', memo: '' }
+  return { id: makeCardId(), frontText: '', backText: '', memo: '', memoOpen: false }
 }
 
 function validateForm(title, cards) {
@@ -57,6 +57,8 @@ function LibraryCreateSet() {
 
   const [setTitle, setSetTitle] = useState('')
   const [setDescription, setSetDescription] = useState('')
+  const [descriptionOpen, setDescriptionOpen] = useState(false)
+  const [folderOpen, setFolderOpen] = useState(false)
   const [folderId, setFolderId] = useState('')
   const [folders, setFolders] = useState([])
 
@@ -82,6 +84,7 @@ function LibraryCreateSet() {
   useEffect(() => {
     if (folderIdFromUrl && /^\d+$/.test(folderIdFromUrl)) {
       setFolderId(folderIdFromUrl)
+      setFolderOpen(true)
     }
   }, [folderIdFromUrl])
 
@@ -102,6 +105,10 @@ function LibraryCreateSet() {
 
   const updateCard = (id, field, value) => {
     setCards((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
+  }
+
+  const toggleCardMemo = (id) => {
+    setCards((prev) => prev.map((c) => (c.id === id ? { ...c, memoOpen: !c.memoOpen } : c)))
   }
 
   const persistSetAndSentences = async (afterSaveNavigate) => {
@@ -158,72 +165,89 @@ function LibraryCreateSet() {
     persistSetAndSentences((setId) => `/library/sets/${setId}`)
   }
 
-  const handleMakeAndStudy = () => {
-    persistSetAndSentences((setId) => `/study/sets/${setId}`)
-  }
-
   return (
-    <section className="container sectionSpacing createSetPage">
+    <section className="container sectionSpacing createSetPage createSetSimplePage">
       <div className="createSetHeader">
         <Link to="/library" className="textLink createSetBackLink">
-          ← 라이브러리
+          X
         </Link>
-        <h1 className="createSetTitle">새 문장 세트 만들기</h1>
+        <h1 className="createSetTitle">문장카드 세트 만들기</h1>
       </div>
 
-      <div className="introCard createSetMetaCard">
+      <div className="introCard createSetMetaCard createSetSimpleMetaCard">
         <div className="uiField">
           <label className="uiFieldLabel" htmlFor="create-set-title">
-            세트 제목 <span className="libraryRequired">*</span>
+            제목 <span className="libraryRequired">*</span>
           </label>
           <input
             id="create-set-title"
             className="uiInput"
             value={setTitle}
             onChange={(e) => setSetTitle(e.target.value)}
-            placeholder="예: 요한복음 3장"
+            placeholder="과목, 주제, 학년, 시험 등"
             autoComplete="off"
           />
         </div>
-        <div className="uiField">
-          <label className="uiFieldLabel" htmlFor="create-set-desc">
-            세트 설명 (선택)
-          </label>
-          <textarea
-            id="create-set-desc"
-            className="uiInput createSetDescArea"
-            rows={2}
-            value={setDescription}
-            onChange={(e) => setSetDescription(e.target.value)}
-            placeholder="이 세트에 대한 메모"
-          />
-        </div>
-        <div className="uiField">
-          <label className="uiFieldLabel" htmlFor="create-set-folder">
-            폴더에 넣기 (선택)
-          </label>
-          <select
-            id="create-set-folder"
-            className="uiInput createSetSelect"
-            value={folderId}
-            onChange={(e) => setFolderId(e.target.value)}
+        {descriptionOpen ? (
+          <div className="uiField">
+            <label className="uiFieldLabel" htmlFor="create-set-desc">
+              설명 (선택)
+            </label>
+            <textarea
+              id="create-set-desc"
+              className="uiInput createSetDescArea"
+              rows={2}
+              value={setDescription}
+              onChange={(e) => setSetDescription(e.target.value)}
+              placeholder="주제가 무엇인가요?"
+            />
+          </div>
+        ) : null}
+        <div className="createSetDescToggleRow">
+          <button
+            type="button"
+            className="createSetDescToggleBtn"
+            onClick={() => setDescriptionOpen((prev) => !prev)}
+            aria-expanded={descriptionOpen}
+            aria-controls="create-set-desc"
           >
-            <option value="">폴더 없음</option>
-            {folderOptions.map((f) => (
-              <option key={f.folderId} value={String(f.folderId)}>
-                {f.folderName}
-              </option>
-            ))}
-          </select>
+            {descriptionOpen ? '- 설명' : '+ 설명'}
+          </button>
+        </div>
+        {folderOpen ? (
+          <div className="uiField">
+            <label className="uiFieldLabel" htmlFor="create-set-folder">
+              폴더 위치 (선택)
+            </label>
+            <select
+              id="create-set-folder"
+              className="uiInput createSetSelect"
+              value={folderId}
+              onChange={(e) => setFolderId(e.target.value)}
+            >
+              <option value="">폴더 없음</option>
+              {folderOptions.map((f) => (
+                <option key={f.folderId} value={String(f.folderId)}>
+                  {f.folderName}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+        <div className="createSetDescToggleRow">
+          <button
+            type="button"
+            className="createSetDescToggleBtn"
+            onClick={() => setFolderOpen((prev) => !prev)}
+            aria-expanded={folderOpen}
+            aria-controls="create-set-folder"
+          >
+            {folderOpen ? '- 폴더' : '+ 폴더'}
+          </button>
         </div>
       </div>
 
       <div className="createSetCardsSection">
-        <h2 className="librarySectionTitle">문장 카드</h2>
-        <p className="libraryPolicyHint">
-          앞면·뒷면이 모두 입력된 카드만 저장됩니다. 언어는 기본값(앞 ko / 뒤 ar)으로 저장됩니다.
-        </p>
-
         <ul className="createSetCardList">
           {cards.map((card, index) => (
             <li key={card.id} className="createSetCard">
@@ -241,41 +265,59 @@ function LibraryCreateSet() {
               </div>
               <div className="createSetCardFields">
                 <div className="uiField">
-                  <label className="uiFieldLabel">앞면 문장 <span className="libraryRequired">*</span></label>
+                  <label className="uiFieldLabel">문장 <span className="libraryRequired">*</span></label>
                   <textarea
                     className="uiInput libraryTextarea"
-                    rows={3}
+                    rows={1}
                     value={card.frontText}
                     onChange={(e) => updateCard(card.id, 'frontText', e.target.value)}
                     disabled={saving}
                   />
                 </div>
                 <div className="uiField">
-                  <label className="uiFieldLabel">뒷면 문장 <span className="libraryRequired">*</span></label>
+                  <label className="uiFieldLabel">뜻 <span className="libraryRequired">*</span></label>
                   <textarea
                     className="uiInput libraryTextarea"
-                    rows={3}
+                    rows={1}
                     value={card.backText}
                     onChange={(e) => updateCard(card.id, 'backText', e.target.value)}
                     disabled={saving}
                   />
                 </div>
               </div>
-              <div className="uiField createSetMemoField">
-                <label className="uiFieldLabel">메모 (선택)</label>
-                <input
-                  className="uiInput"
-                  value={card.memo}
-                  onChange={(e) => updateCard(card.id, 'memo', e.target.value)}
+              {card.memoOpen ? (
+                <div className="uiField createSetCardMemoField">
+                  <label className="uiFieldLabel" htmlFor={`create-set-memo-${card.id}`}>
+                    메모 (선택)
+                  </label>
+                  <textarea
+                    id={`create-set-memo-${card.id}`}
+                    className="uiInput libraryTextarea"
+                    rows={1}
+                    value={card.memo}
+                    onChange={(e) => updateCard(card.id, 'memo', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+              ) : null}
+              <div className="createSetCardToggleRow">
+                <button
+                  type="button"
+                  className="createSetDescToggleBtn"
+                  onClick={() => toggleCardMemo(card.id)}
+                  aria-expanded={Boolean(card.memoOpen)}
+                  aria-controls={`create-set-memo-${card.id}`}
                   disabled={saving}
-                />
+                >
+                  {card.memoOpen ? '- 메모' : '+ 메모'}
+                </button>
               </div>
             </li>
           ))}
         </ul>
 
         <button type="button" className="headerGhostButton createSetAddCardBtn" onClick={addCard} disabled={saving}>
-          + 카드 추가하기
+          + 카드 추가
         </button>
       </div>
 
@@ -285,17 +327,18 @@ function LibraryCreateSet() {
         </p>
       ) : null}
 
-      <div className="createSetActions">
-        <button type="button" className="primaryButton" onClick={handleMake} disabled={saving}>
-          {saving ? '저장 중…' : '만들기'}
-        </button>
+      <div className="createSetActions createSetSimpleActions">
         <button
           type="button"
-          className="uiButton uiButton--secondary createSetActionStudy"
-          onClick={handleMakeAndStudy}
+          className="createSetFabAdd"
+          onClick={addCard}
           disabled={saving}
+          aria-label="카드 추가"
         >
-          {saving ? '저장 중…' : '만들고 연습하기'}
+          +
+        </button>
+        <button type="button" className="primaryButton" onClick={handleMake} disabled={saving}>
+          {saving ? '저장 중…' : '완료'}
         </button>
       </div>
     </section>

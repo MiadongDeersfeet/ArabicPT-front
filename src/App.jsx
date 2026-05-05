@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Library from './pages/Library.jsx'
+import LibraryFolders from './pages/LibraryFolders.jsx'
 import LibraryFolderDetail from './pages/LibraryFolderDetail.jsx'
 import LibraryCreateSet from './pages/LibraryCreateSet.jsx'
 import LibrarySetDetail from './pages/LibrarySetDetail.jsx'
@@ -26,6 +27,14 @@ function App() {
         element={
           <Layout>
             <Library />
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/folders"
+        element={
+          <Layout>
+            <LibraryFolders />
           </Layout>
         }
       />
