@@ -11,23 +11,40 @@ const learningCards = [
 ]
 
 function Home() {
+  const quickLinks = [
+    {
+      title: '라이브러리',
+      description: '문장 세트를 확인하고 학습을 시작합니다.',
+      to: '/library',
+    },
+    {
+      title: '공용 UI 컴포넌트',
+      description: '현재 사용 중인 공용 UI 요소를 확인합니다.',
+      to: '/ui-kit',
+    },
+  ]
+
   return (
     <>
       <section className="container">
         <div className="introCard" role="region" aria-label="학습 소개">
-          <h2>모바일 퍼스트 학습 카드</h2>
           <Link to="/library" className="primaryButton">
             내 문장 세트
           </Link>
-          <div className="homeIntroLinks">
-            <span className="homeIntroHint">문장 세트를 선택한 뒤 학습을 시작하세요.</span>
-            <Link to="/library" className="textLink">
-              라이브러리
+        </div>
+      </section>
+
+      <section className="container sectionSpacing">
+        <h2 className="sectionTitle">바로가기</h2>
+        <div className="cardGrid">
+          {quickLinks.map((card) => (
+            <Link key={card.title} to={card.to} className="learningCardLink">
+              <article className="learningCard">
+                <h3>{card.title}</h3>
+                {/* <p>{card.description}</p> */}
+              </article>
             </Link>
-            <Link to="/ui-kit" className="textLink">
-              공용 UI 컴포넌트
-            </Link>
-          </div>
+          ))}
         </div>
       </section>
 
