@@ -1,236 +1,265 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getFolders } from '../api/folderApi.js'
-import { deleteSet, getSet, updateSet } from '../api/sentenceSetApi.js'
-import { createSentence, deleteSentence, getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { getSet } from '../api/sentenceSetApi.js'
+import { deleteSentence, getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
+import { generateSentenceAudio, getSentenceAudio } from '../api/audioApi.js'
 
-const DEFAULT_FRONT_LANG = 'ko-KR'
-const DEFAULT_BACK_LANG = 'ar-SA'
+const DUMMY_AUTHOR = 'noorismee'
 
 function LibrarySetDetail() {
   const { setId: setIdParam } = useParams()
-  const navigate = useNavigate()
   const setIdNum = Number(setIdParam)
   const setIdValid = Number.isInteger(setIdNum) && setIdNum > 0
 
   const [setMeta, setSetMeta] = useState(null)
-  const [folders, setFolders] = useState([])
-  const [foldersLoading, setFoldersLoading] = useState(false)
-  const [folderMoveBusy, setFolderMoveBusy] = useState(false)
-  const [folderMoveError, setFolderMoveError] = useState(false)
-  const [editMetaOpen, setEditMetaOpen] = useState(false)
-  const [editSetName, setEditSetName] = useState('')
-  const [editSetDesc, setEditSetDesc] = useState('')
-  const [metaSaving, setMetaSaving] = useState(false)
-  const [metaError, setMetaError] = useState(false)
-  const [deleteBusy, setDeleteBusy] = useState(false)
   const [sentences, setSentences] = useState([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState(false)
+  const [activeSlide, setActiveSlide] = useState(0)
+  const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
+  const [modifiedSentenceMap, setModifiedSentenceMap] = useState({})
+  const [editingSentenceId, setEditingSentenceId] = useState(null)
+  const [editingFrontText, setEditingFrontText] = useState('')
+  const [editingBackText, setEditingBackText] = useState('')
+  const [editingMemo, setEditingMemo] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [deleteTargetSentence, setDeleteTargetSentence] = useState(null)
+  const [deletingSentence, setDeletingSentence] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const dragStartXRef = useRef(0)
+  const dragDiffXRef = useRef(0)
 
-  const [frontText, setFrontText] = useState('')
-  const [backText, setBackText] = useState('')
-  const [memo, setMemo] = useState('')
-  const [frontLang, setFrontLang] = useState(DEFAULT_FRONT_LANG)
-  const [backLang, setBackLang] = useState(DEFAULT_BACK_LANG)
-  const [createSubmitting, setCreateSubmitting] = useState(false)
-  const [createError, setCreateError] = useState(false)
-
-  const [editingId, setEditingId] = useState(null)
-  const [editFront, setEditFront] = useState('')
-  const [editBack, setEditBack] = useState('')
-  const [editMemo, setEditMemo] = useState('')
-  const [editFrontLang, setEditFrontLang] = useState('')
-  const [editBackLang, setEditBackLang] = useState('')
-  const [editSaving, setEditSaving] = useState(false)
-
-  const loadAll = useCallback(async () => {
+  useEffect(() => {
     if (!setIdValid) return
-    setLoading(true)
-    setListError(false)
-    try {
-      const [meta, list] = await Promise.all([getSet(setIdNum), getSentencesBySet(setIdNum)])
-      setSetMeta(meta)
-      setSentences(Array.isArray(list) ? list : [])
-    } catch (e) {
-      console.error(e)
-      setSetMeta(null)
-      setSentences([])
-      setListError(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [setIdNum, setIdValid])
-
-  useEffect(() => {
-    loadAll()
-  }, [loadAll])
-
-  useEffect(() => {
     let alive = true
-    const loadFolders = async () => {
-      if (!setIdValid) return
-      setFoldersLoading(true)
+    ;(async () => {
+      setLoading(true)
+      setListError(false)
       try {
-        const list = await getFolders()
-        if (alive) setFolders(Array.isArray(list) ? list : [])
+        const [meta, list] = await Promise.all([getSet(setIdNum), getSentencesBySet(setIdNum)])
+        if (!alive) return
+        setSetMeta(meta)
+        setSentences(Array.isArray(list) ? list : [])
+        setActiveSlide(0)
       } catch (e) {
         console.error(e)
-        if (alive) setFolders([])
+        if (!alive) return
+        setSetMeta(null)
+        setSentences([])
+        setListError(true)
       } finally {
-        if (alive) setFoldersLoading(false)
+        if (alive) setLoading(false)
       }
-    }
-    loadFolders()
+    })()
     return () => {
       alive = false
     }
-  }, [setIdValid])
+  }, [setIdNum, setIdValid])
 
-  const openEditMeta = () => {
-    if (!setMeta) return
-    setEditSetName(setMeta.setName ?? '')
-    setEditSetDesc(setMeta.description ?? '')
-    setMetaError(false)
-    setEditMetaOpen(true)
-  }
+  const visibleSlides = useMemo(() => sentences.slice(0, 8), [sentences])
+  const wordCount = setMeta?.sentenceCount ?? sentences.length
+  const backendBaseUrl = ''
 
-  const saveEditMeta = async () => {
-    if (!setIdValid || metaSaving) return
-    const name = editSetName.trim()
-    if (!name) return
-    setMetaSaving(true)
-    setMetaError(false)
-    try {
-      await updateSet(setIdNum, {
-        setName: name,
-        // 백엔드: null = 유지, "" = 비우기
-        description: editSetDesc.trim(),
-      })
-      setEditMetaOpen(false)
-      await loadAll()
-    } catch (e) {
-      console.error(e)
-      setMetaError(true)
-    } finally {
-      setMetaSaving(false)
-    }
-  }
-
-  /** 백엔드는 폴더 제거 시 `clearFolder: true`를 기대합니다(null folderId만으로는 분리되지 않음). */
-  const handleFolderSelectChange = async (event) => {
-    if (!setIdValid || folderMoveBusy || !setMeta) return
-    const raw = event.target.value
-    const currentId = setMeta.folderId != null ? String(setMeta.folderId) : ''
-    if (raw === currentId) return
-    setFolderMoveBusy(true)
-    setFolderMoveError(false)
-    try {
-      if (raw === '') {
-        await updateSet(setIdNum, { clearFolder: true })
-      } else {
-        await updateSet(setIdNum, { folderId: Number(raw) })
-      }
-      await loadAll()
-    } catch (e) {
-      console.error(e)
-      setFolderMoveError(true)
-    } finally {
-      setFolderMoveBusy(false)
-    }
-  }
-
-  const handleDeleteSet = async () => {
-    if (!setIdValid || deleteBusy) return
-    if (
-      !window.confirm(
-        '이 문장 세트를 삭제할까요? 세트 안의 모든 문장도 함께 삭제될 수 있습니다.',
-      )
-    ) {
+  useEffect(() => {
+    if (sentences.length === 0) {
+      setAudioStateBySentenceId({})
+      setModifiedSentenceMap({})
       return
     }
-    setDeleteBusy(true)
-    try {
-      await deleteSet(setIdNum)
-      navigate('/library', { replace: true })
-    } catch (e) {
-      console.error(e)
-      window.alert('문장 세트를 삭제하지 못했습니다.')
-    } finally {
-      setDeleteBusy(false)
-    }
-  }
 
-  const handleCreate = async (event) => {
-    event.preventDefault()
-    if (!setIdValid || createSubmitting) return
-    const tf = frontText.trim()
-    const tb = backText.trim()
-    if (!tf || !tb) return
-    setCreateSubmitting(true)
-    setCreateError(false)
-    try {
-      await createSentence(setIdNum, {
-        frontLang: frontLang.trim() || DEFAULT_FRONT_LANG,
-        frontText: tf,
-        backLang: backLang.trim() || DEFAULT_BACK_LANG,
-        backText: tb,
-        memo: memo.trim() === '' ? null : memo.trim(),
+    let alive = true
+    ;(async () => {
+      const entries = await Promise.all(
+        sentences.map(async (sentence) => {
+          try {
+            const audio = await getSentenceAudio(sentence.sentenceId)
+            if (audio?.audioUrl) {
+              return [sentence.sentenceId, { status: 'done', audioUrl: audio.audioUrl }]
+            }
+            return [sentence.sentenceId, { status: 'none', audioUrl: null }]
+          } catch {
+            return [sentence.sentenceId, { status: 'none', audioUrl: null }]
+          }
+        }),
+      )
+
+      if (!alive) return
+      setAudioStateBySentenceId(Object.fromEntries(entries))
+      setModifiedSentenceMap((prev) => {
+        const next = {}
+        for (const sentence of sentences) {
+          next[sentence.sentenceId] = Boolean(prev[sentence.sentenceId])
+        }
+        return next
       })
-      setFrontText('')
-      setBackText('')
-      setMemo('')
-      await loadAll()
-    } catch (e) {
-      console.error(e)
-      setCreateError(true)
-    } finally {
-      setCreateSubmitting(false)
+    })()
+
+    return () => {
+      alive = false
     }
+  }, [sentences])
+
+  const moveSlide = (delta) => {
+    if (visibleSlides.length === 0) return
+    setActiveSlide((prev) => {
+      const next = prev + delta
+      if (next < 0) return visibleSlides.length - 1
+      if (next >= visibleSlides.length) return 0
+      return next
+    })
   }
 
-  const startEdit = (s) => {
-    setEditingId(s.sentenceId)
-    setEditFront(s.frontText ?? '')
-    setEditBack(s.backText ?? '')
-    setEditMemo(s.memo ?? '')
-    setEditFrontLang(s.frontLang ?? DEFAULT_FRONT_LANG)
-    setEditBackLang(s.backLang ?? DEFAULT_BACK_LANG)
+  const handleSlidePointerDown = (event) => {
+    if (visibleSlides.length <= 1) return
+    dragStartXRef.current = event.clientX
+    dragDiffXRef.current = 0
+    setDragging(true)
   }
 
-  const cancelEdit = () => {
-    setEditingId(null)
+  const handleSlidePointerMove = (event) => {
+    if (!dragging) return
+    dragDiffXRef.current = event.clientX - dragStartXRef.current
   }
 
-  const saveEdit = async () => {
-    if (editingId == null || editSaving) return
-    setEditSaving(true)
+  const handleSlidePointerEnd = () => {
+    if (!dragging) return
+    const threshold = 40
+    const movedX = dragDiffXRef.current
+    if (movedX <= -threshold) {
+      moveSlide(1)
+    } else if (movedX >= threshold) {
+      moveSlide(-1)
+    }
+    setDragging(false)
+    dragDiffXRef.current = 0
+  }
+
+  const getFullAudioUrl = (audioUrl) => {
+    if (!audioUrl) return ''
+    if (audioUrl.startsWith('http://') || audioUrl.startsWith('https://')) {
+      return audioUrl
+    }
+    return `${backendBaseUrl}${audioUrl}`
+  }
+
+  const handleGenerateAudio = async (sentenceId) => {
+    setAudioStateBySentenceId((prev) => ({
+      ...prev,
+      [sentenceId]: { ...(prev[sentenceId] ?? {}), status: 'loading' },
+    }))
     try {
-      await updateSentence(editingId, {
-        frontLang: editFrontLang.trim() || undefined,
-        frontText: editFront.trim() || undefined,
-        backLang: editBackLang.trim() || undefined,
-        backText: editBack.trim() || undefined,
-        // 백엔드: null = 유지, "" = 비우기
-        memo: editMemo.trim(),
-      })
-      setEditingId(null)
-      await loadAll()
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setEditSaving(false)
+      const created = await generateSentenceAudio(sentenceId)
+      setAudioStateBySentenceId((prev) => ({
+        ...prev,
+        [sentenceId]: {
+          status: created?.audioUrl ? 'done' : 'error',
+          audioUrl: created?.audioUrl ?? null,
+        },
+      }))
+      if (created?.audioUrl) {
+        setModifiedSentenceMap((prev) => ({ ...prev, [sentenceId]: false }))
+      }
+    } catch {
+      setAudioStateBySentenceId((prev) => ({
+        ...prev,
+        [sentenceId]: { ...(prev[sentenceId] ?? {}), status: 'error' },
+      }))
     }
   }
 
-  const handleDelete = async (sentenceId) => {
-    if (!window.confirm('이 문장을 삭제할까요?')) return
+  const handlePlayAudio = async (sentenceId) => {
+    const entry = audioStateBySentenceId[sentenceId]
+    const fullUrl = getFullAudioUrl(entry?.audioUrl)
+    if (!fullUrl) return
+    try {
+      const audio = new Audio(fullUrl)
+      await audio.play()
+    } catch {
+      setAudioStateBySentenceId((prev) => ({
+        ...prev,
+        [sentenceId]: { ...(prev[sentenceId] ?? {}), status: 'error' },
+      }))
+    }
+  }
+
+  const startEditingSentence = (sentence) => {
+    setEditingSentenceId(sentence.sentenceId)
+    setEditingFrontText(sentence.frontText ?? '')
+    setEditingBackText(sentence.backText ?? '')
+    setEditingMemo(sentence.memo ?? '')
+  }
+
+  const cancelEditingSentence = () => {
+    if (savingEdit) return
+    setEditingSentenceId(null)
+  }
+
+  const handleSaveSentenceEdit = async (sentenceId) => {
+    if (savingEdit) return
+    const nextFront = editingFrontText.trim()
+    const nextBack = editingBackText.trim()
+    if (!nextFront || !nextBack) return
+
+    setSavingEdit(true)
+    try {
+      const updated = await updateSentence(sentenceId, {
+        frontText: nextFront,
+        backText: nextBack,
+        memo: editingMemo,
+      })
+
+      setSentences((prev) =>
+        prev.map((row) =>
+          row.sentenceId === sentenceId
+            ? {
+                ...row,
+                frontText: updated?.frontText ?? nextFront,
+                backText: updated?.backText ?? nextBack,
+                memo: updated?.memo ?? editingMemo,
+              }
+            : row,
+        ),
+      )
+      setAudioStateBySentenceId((prev) => ({
+        ...prev,
+        [sentenceId]: { status: 'none', audioUrl: null },
+      }))
+      setModifiedSentenceMap((prev) => ({ ...prev, [sentenceId]: true }))
+      setEditingSentenceId(null)
+    } catch (error) {
+      console.error(error)
+      window.alert('문장 수정에 실패했습니다.')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const handleDeleteSentence = async () => {
+    if (!deleteTargetSentence || deletingSentence) return
+    const sentenceId = deleteTargetSentence.sentenceId
+    setDeletingSentence(true)
     try {
       await deleteSentence(sentenceId)
-      if (editingId === sentenceId) setEditingId(null)
-      await loadAll()
-    } catch (e) {
-      console.error(e)
+      setSentences((prev) => prev.filter((row) => row.sentenceId !== sentenceId))
+      setAudioStateBySentenceId((prev) => {
+        const next = { ...prev }
+        delete next[sentenceId]
+        return next
+      })
+      setModifiedSentenceMap((prev) => {
+        const next = { ...prev }
+        delete next[sentenceId]
+        return next
+      })
+      if (editingSentenceId === sentenceId) {
+        setEditingSentenceId(null)
+      }
+      setDeleteTargetSentence(null)
+    } catch (error) {
+      console.error(error)
+      window.alert('문장 삭제에 실패했습니다.')
+    } finally {
+      setDeletingSentence(false)
     }
   }
 
@@ -248,196 +277,66 @@ function LibrarySetDetail() {
   }
 
   return (
-    <section className="container sectionSpacing">
-      <div className="introCard">
-        <h2>{setMeta?.setName ?? '문장 세트'}</h2>
-        {setMeta?.description ? <p>{setMeta.description}</p> : null}
-        {setMeta?.folderName ? (
-          <p className="libraryPolicyHint">폴더: {setMeta.folderName}</p>
-        ) : null}
-        <div className="libraryTopActions">
-          <Link to="/library" className="textLink">
-            ← 라이브러리로
-          </Link>
-          <Link to={`/study/sets/${setIdNum}`} className="primaryButton libraryStudyLink">
-            이 세트로 학습
-          </Link>
-        </div>
+    <section className="container sectionSpacing librarySetViewPage">
+      <div className="librarySetTopBar">
+        <Link to="/library" className="textLink librarySetTopLink">
+          ← 라이브러리
+        </Link>
+        <Link to={`/study/sets/${setIdNum}`} className="primaryButton librarySetTopStudyButton">
+          학습하기
+        </Link>
       </div>
 
-      <div className="introCard librarySetManageSection" aria-label="세트 관리">
-        <h3 className="librarySectionTitle">세트 관리</h3>
-        <div className="librarySetManageRow">
-          <button type="button" className="headerGhostButton" onClick={openEditMeta}>
-            제목·설명 수정
-          </button>
-          <button
-            type="button"
-            className="libraryDangerButton"
-            onClick={handleDeleteSet}
-            disabled={deleteBusy}
-          >
-            {deleteBusy ? '삭제 중…' : '세트 삭제'}
-          </button>
-        </div>
-        <div className="uiField libraryFolderMoveField">
-          <label className="uiFieldLabel" htmlFor="set-folder-select">
-            폴더
-          </label>
-          <select
-            id="set-folder-select"
-            className="uiInput librarySelect"
-            value={setMeta?.folderId != null ? String(setMeta.folderId) : ''}
-            onChange={handleFolderSelectChange}
-            disabled={loading || folderMoveBusy || foldersLoading}
-          >
-            <option value="">폴더 없음</option>
-            {folders.map((f) => (
-              <option key={f.folderId} value={String(f.folderId)}>
-                {f.folderName}
-              </option>
-            ))}
-          </select>
-          {folderMoveError ? (
-            <p className="libraryFormError" role="alert">
-              폴더를 변경하지 못했습니다.
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      {editMetaOpen ? (
-        <div
-          className="libraryModalOverlay"
-          role="presentation"
-          onClick={() => !metaSaving && setEditMetaOpen(false)}
-        >
-          <div
-            className="libraryModal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="set-meta-edit-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="set-meta-edit-title" className="libraryModalTitle">
-              세트 정보 수정
-            </h3>
-            <div className="formGrid">
-              <div className="uiField">
-                <label className="uiFieldLabel" htmlFor="edit-set-name">
-                  세트 제목 <span className="libraryRequired">*</span>
-                </label>
-                <input
-                  id="edit-set-name"
-                  className="uiInput"
-                  value={editSetName}
-                  onChange={(e) => setEditSetName(e.target.value)}
-                />
-              </div>
-              <div className="uiField">
-                <label className="uiFieldLabel" htmlFor="edit-set-desc">
-                  설명 (선택)
-                </label>
-                <textarea
-                  id="edit-set-desc"
-                  className="uiInput libraryTextarea"
-                  rows={3}
-                  value={editSetDesc}
-                  onChange={(e) => setEditSetDesc(e.target.value)}
-                />
-              </div>
-            </div>
-            {metaError ? (
-              <p className="libraryFormError" role="alert">
-                저장하지 못했습니다.
+      <section className="librarySetSlideSection">
+        {loading ? (
+          <p className="libraryStatusText">불러오는 중입니다.</p>
+        ) : listError ? (
+          <p className="libraryStatusText">불러오지 못했습니다.</p>
+        ) : visibleSlides.length === 0 ? (
+          <p className="libraryStatusText">표시할 문장이 없습니다.</p>
+        ) : (
+          <div className="librarySetSlideWrap">
+            <article
+              className={dragging ? 'librarySetSlideCard isDragging' : 'librarySetSlideCard'}
+              onPointerDown={handleSlidePointerDown}
+              onPointerMove={handleSlidePointerMove}
+              onPointerUp={handleSlidePointerEnd}
+              onPointerCancel={handleSlidePointerEnd}
+              onPointerLeave={handleSlidePointerEnd}
+              aria-label="문장 카드 슬라이드"
+            >
+              <p className="librarySetSlideFront" dir="auto">
+                {visibleSlides[activeSlide]?.frontText}
               </p>
-            ) : null}
-            <div className="libraryModalActions">
-              <button
-                type="button"
-                className="primaryButton"
-                onClick={saveEditMeta}
-                disabled={metaSaving || editSetName.trim() === ''}
-              >
-                {metaSaving ? '저장 중…' : '저장'}
-              </button>
-              <button
-                type="button"
-                className="headerGhostButton"
-                onClick={() => !metaSaving && setEditMetaOpen(false)}
-              >
-                취소
-              </button>
-            </div>
+            </article>
           </div>
+        )}
+        <div className="librarySetDots" aria-hidden="true">
+          {visibleSlides.map((_, index) => (
+            <span
+              key={`dot-${index}`}
+              className={index === activeSlide ? 'librarySetDot isActive' : 'librarySetDot'}
+            />
+          ))}
         </div>
-      ) : null}
+      </section>
 
-      <div className="introCard libraryCreateSection">
-        <h3 className="librarySectionTitle">문장 추가</h3>
-        <p className="libraryCreateHint">문장은 이 문장 세트에만 저장됩니다.</p>
-        <form className="formGrid libraryCreateFormOnly" onSubmit={handleCreate}>
-          <div className="uiField">
-            <label className="uiFieldLabel" htmlFor="add-front-lang">앞면 언어</label>
-            <input
-              id="add-front-lang"
-              className="uiInput"
-              value={frontLang}
-              onChange={(e) => setFrontLang(e.target.value)}
-            />
-          </div>
-          <div className="uiField">
-            <label className="uiFieldLabel" htmlFor="add-back-lang">뒷면 언어</label>
-            <input
-              id="add-back-lang"
-              className="uiInput"
-              value={backLang}
-              onChange={(e) => setBackLang(e.target.value)}
-            />
-          </div>
-          <div className="uiField">
-            <label className="uiFieldLabel" htmlFor="add-front-text">
-              앞면 문장 <span className="libraryRequired">*</span>
-            </label>
-            <textarea
-              id="add-front-text"
-              className="uiInput libraryTextarea"
-              rows={3}
-              value={frontText}
-              onChange={(e) => setFrontText(e.target.value)}
-              required
-            />
-          </div>
-          <div className="uiField">
-            <label className="uiFieldLabel" htmlFor="add-back-text">
-              뒷면 문장 <span className="libraryRequired">*</span>
-            </label>
-            <textarea
-              id="add-back-text"
-              className="uiInput libraryTextarea"
-              rows={3}
-              value={backText}
-              onChange={(e) => setBackText(e.target.value)}
-              required
-            />
-          </div>
-          <div className="uiField">
-            <label className="uiFieldLabel" htmlFor="add-memo">메모 (선택)</label>
-            <input id="add-memo" className="uiInput" value={memo} onChange={(e) => setMemo(e.target.value)} />
-          </div>
-          <button type="submit" className="primaryButton" disabled={createSubmitting}>
-            {createSubmitting ? '저장 중…' : '문장 저장'}
-          </button>
-          {createError ? (
-            <p className="libraryFormError" role="alert">
-              문장을 저장하지 못했습니다.
-            </p>
-          ) : null}
-        </form>
-      </div>
+      <section className="librarySetMiddleSpacer" aria-hidden="true" />
+
+      <section className="librarySetMetaSection introCard">
+        <h2>{setMeta?.setName ?? '문장 세트'}</h2>
+        <div className="librarySetAuthorRow">
+          <span className="librarySetAuthorAvatar" aria-hidden="true">
+            🌊
+          </span>
+          <span className="librarySetAuthorName">{DUMMY_AUTHOR}</span>
+          <span className="librarySetAuthorDivider" aria-hidden="true" />
+          <span className="librarySetWordCount">{wordCount} 단어</span>
+        </div>
+      </section>
 
       <div className="librarySentenceBlock">
-        <h3 className="librarySectionTitle">이 세트의 문장</h3>
+        <h3 className="librarySectionTitle">앞/뒷면 문장</h3>
         {loading ? (
           <p className="libraryStatusText">불러오는 중입니다.</p>
         ) : listError ? (
@@ -449,87 +348,209 @@ function LibrarySetDetail() {
         ) : (
           <ul className="librarySentenceList">
             {sentences.map((sentence) => (
-              <li key={sentence.sentenceId} className="librarySentenceRow">
-                {editingId === sentence.sentenceId ? (
-                  <div className="libraryEditForm">
-                    <div className="uiField">
-                      <label className="uiFieldLabel">앞면 언어</label>
-                      <input
-                        className="uiInput"
-                        value={editFrontLang}
-                        onChange={(e) => setEditFrontLang(e.target.value)}
+              <li key={sentence.sentenceId} className="librarySentenceRow librarySentenceRow--showcase">
+                <div className="librarySentenceCardActionRow">
+                  <button
+                    type="button"
+                    className="librarySentenceIconButton"
+                    aria-label="문장 수정"
+                    onClick={() => startEditingSentence(sentence)}
+                    disabled={savingEdit}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="librarySentenceIcon">
+                      <path
+                        d="M12 20h9"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                    </div>
-                    <div className="uiField">
-                      <label className="uiFieldLabel">뒷면 언어</label>
-                      <input
-                        className="uiInput"
-                        value={editBackLang}
-                        onChange={(e) => setEditBackLang(e.target.value)}
+                      <path
+                        d="M16.5 3.5a2.12 2.12 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                    </div>
-                    <div className="uiField">
-                      <label className="uiFieldLabel">앞면 문장</label>
-                      <textarea
-                        className="uiInput libraryTextarea"
-                        rows={3}
-                        value={editFront}
-                        onChange={(e) => setEditFront(e.target.value)}
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="librarySentenceIconButton"
+                    aria-label="문장 삭제"
+                    onClick={() => setDeleteTargetSentence(sentence)}
+                    disabled={savingEdit || deletingSentence}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="librarySentenceIcon">
+                      <path
+                        d="M3 6h18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                    </div>
-                    <div className="uiField">
-                      <label className="uiFieldLabel">뒷면 문장</label>
-                      <textarea
-                        className="uiInput libraryTextarea"
-                        rows={3}
-                        value={editBack}
-                        onChange={(e) => setEditBack(e.target.value)}
+                      <path
+                        d="M8 6V4h8v2M6 6l1 14h10l1-14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                    </div>
-                    <div className="uiField">
-                      <label className="uiFieldLabel">메모</label>
-                      <input className="uiInput" value={editMemo} onChange={(e) => setEditMemo(e.target.value)} />
-                    </div>
-                    <div className="libraryEditActions">
-                      <button type="button" className="primaryButton" onClick={saveEdit} disabled={editSaving}>
-                        {editSaving ? '저장 중…' : '저장'}
+                      <path
+                        d="M10 10v6M14 10v6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {editingSentenceId === sentence.sentenceId ? (
+                  <div className="librarySentenceEditBlock">
+                    <label className="uiFieldLabel">문장</label>
+                    <textarea
+                      className="uiInput libraryTextarea"
+                      rows={2}
+                      value={editingFrontText}
+                      onChange={(event) => setEditingFrontText(event.target.value)}
+                    />
+                    <label className="uiFieldLabel">뜻</label>
+                    <textarea
+                      className="uiInput libraryTextarea"
+                      rows={2}
+                      value={editingBackText}
+                      onChange={(event) => setEditingBackText(event.target.value)}
+                    />
+                    <label className="uiFieldLabel">메모</label>
+                    <input
+                      className="uiInput"
+                      value={editingMemo}
+                      onChange={(event) => setEditingMemo(event.target.value)}
+                    />
+                    <div className="librarySentenceEditActions">
+                      <button
+                        type="button"
+                        className="libraryAudioButton"
+                        onClick={() => handleSaveSentenceEdit(sentence.sentenceId)}
+                        disabled={savingEdit}
+                      >
+                        {savingEdit ? '저장 중...' : '저장'}
                       </button>
-                      <button type="button" className="headerGhostButton" onClick={cancelEdit}>
+                      <button
+                        type="button"
+                        className="libraryAudioButton"
+                        onClick={cancelEditingSentence}
+                        disabled={savingEdit}
+                      >
                         취소
                       </button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="librarySentenceMeta">
-                      <span className="librarySentenceLangs">
-                        {sentence.frontLang} → {sentence.backLang}
-                      </span>
-                    </div>
-                    <p className="librarySentenceFront">{sentence.frontText}</p>
+                    <p className="librarySentenceFront" dir="auto">
+                      {sentence.frontText}
+                    </p>
                     <p className="librarySentenceBack" dir="auto">
                       {sentence.backText}
                     </p>
                     {sentence.memo ? <p className="librarySentenceMemo">메모: {sentence.memo}</p> : null}
-                    <div className="librarySentenceActions">
-                      <button type="button" className="headerGhostButton" onClick={() => startEdit(sentence)}>
-                        수정
-                      </button>
-                      <button
-                        type="button"
-                        className="headerGhostButton"
-                        onClick={() => handleDelete(sentence.sentenceId)}
-                      >
-                        삭제
-                      </button>
-                    </div>
                   </>
                 )}
+                <div className="librarySentenceAudioRow">
+                  {audioStateBySentenceId[sentence.sentenceId]?.status === 'loading' ? (
+                    <button type="button" className="libraryAudioButton" disabled>
+                      생성 중...
+                    </button>
+                  ) : audioStateBySentenceId[sentence.sentenceId]?.status === 'done' ? (
+                    <>
+                      <span className="libraryAudioDone" aria-label="오디오 생성 완료">
+                        ✓
+                      </span>
+                      <button
+                        type="button"
+                        className="libraryAudioButton"
+                        onClick={() => handlePlayAudio(sentence.sentenceId)}
+                      >
+                        재생
+                      </button>
+                      {modifiedSentenceMap[sentence.sentenceId] ? (
+                        <button
+                          type="button"
+                          className="libraryAudioButton"
+                          onClick={() => handleGenerateAudio(sentence.sentenceId)}
+                        >
+                          다시 생성
+                        </button>
+                      ) : null}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="libraryAudioButton"
+                      onClick={() => handleGenerateAudio(sentence.sentenceId)}
+                    >
+                      {modifiedSentenceMap[sentence.sentenceId]
+                        ? '다시 생성'
+                        : audioStateBySentenceId[sentence.sentenceId]?.status === 'error'
+                          ? '다시 생성'
+                          : '음성 생성'}
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+      {deleteTargetSentence ? (
+        <div
+          className="libraryModalOverlay"
+          role="presentation"
+          onClick={() => !deletingSentence && setDeleteTargetSentence(null)}
+        >
+          <div
+            className="libraryModal libraryDeleteModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sentence-delete-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="sentence-delete-title" className="libraryModalTitle">
+              문장을 삭제할까요?
+            </h3>
+            <p className="libraryDeleteModalText">삭제한 문장은 복구할 수 없습니다.</p>
+            <p className="libraryDeleteModalPreview" dir="auto">
+              {deleteTargetSentence.frontText}
+            </p>
+            <div className="libraryModalActions">
+              <button
+                type="button"
+                className="libraryDangerButton"
+                onClick={handleDeleteSentence}
+                disabled={deletingSentence}
+              >
+                {deletingSentence ? '삭제 중...' : '삭제'}
+              </button>
+              <button
+                type="button"
+                className="headerGhostButton"
+                onClick={() => !deletingSentence && setDeleteTargetSentence(null)}
+                disabled={deletingSentence}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

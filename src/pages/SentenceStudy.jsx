@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
 import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
 import { useParams, Link } from 'react-router-dom'
 import { getSentencesBySet } from '../api/sentenceApi.js'
+import { getSentenceAudio } from '../api/audioApi.js'
 import { resumeCountdownAudio } from '../utils/countdownAudio.js'
 import { useSentenceCountdown } from '../hooks/useSentenceCountdown.js'
 import { useLongPressAdjust } from '../hooks/useLongPressAdjust.js'
@@ -73,6 +74,8 @@ function SentenceStudy() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
+  const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
+  const previousIsFlippedRef = useRef(false)
   const currentSentence = sentences[currentIndex]
   const cardSides = resolveCardSides(currentSentence, cardSideReversed)
 
@@ -164,6 +167,36 @@ function SentenceStudy() {
     }
   }, [currentIndex, sentences.length])
 
+  useEffect(() => {
+    if (sentences.length === 0) {
+      setAudioStateBySentenceId({})
+      return
+    }
+
+    let alive = true
+    ;(async () => {
+      const entries = await Promise.all(
+        sentences.map(async (sentence) => {
+          try {
+            const audio = await getSentenceAudio(sentence.sentenceId)
+            if (audio?.audioUrl) {
+              return [sentence.sentenceId, { status: 'done', audioUrl: audio.audioUrl }]
+            }
+            return [sentence.sentenceId, { status: 'none', audioUrl: null }]
+          } catch {
+            return [sentence.sentenceId, { status: 'none', audioUrl: null }]
+          }
+        }),
+      )
+      if (!alive) return
+      setAudioStateBySentenceId(Object.fromEntries(entries))
+    })()
+
+    return () => {
+      alive = false
+    }
+  }, [sentences])
+
   const goPrev = () => {
     if (sentences.length === 0) return
     setIsFlipped(false)
@@ -185,6 +218,38 @@ function SentenceStudy() {
       return !prev
     })
   }, [])
+
+  const getFullAudioUrl = useCallback((audioUrl) => {
+    if (!audioUrl) return ''
+    if (audioUrl.startsWith('http://') || audioUrl.startsWith('https://')) {
+      return audioUrl
+    }
+    return audioUrl
+  }, [])
+
+  const playCurrentSentenceAudio = useCallback(async () => {
+    const sentenceId = currentSentence?.sentenceId
+    if (!sentenceId) return
+    const entry = audioStateBySentenceId[sentenceId]
+    const fullUrl = getFullAudioUrl(entry?.audioUrl)
+    if (!fullUrl) return
+    try {
+      const audio = new Audio(fullUrl)
+      await audio.play()
+    } catch (error) {
+      console.error(error)
+    }
+  }, [audioStateBySentenceId, currentSentence?.sentenceId, getFullAudioUrl])
+
+  useEffect(() => {
+    const wasFlipped = previousIsFlippedRef.current
+    const nowFlipped = isFlipped
+    previousIsFlippedRef.current = nowFlipped
+
+    if (!wasFlipped && nowFlipped && countdownEnabled) {
+      void playCurrentSentenceAudio()
+    }
+  }, [countdownEnabled, isFlipped, playCurrentSentenceAudio])
   const { startLongPressAdjust, stopLongPressAdjust, handleStepButtonClick } = useLongPressAdjust({
     enabled: countdownEnabled,
     longPressDelayMs: LONG_PRESS_DELAY_MS,
@@ -336,6 +401,8 @@ function SentenceStudy() {
           backDir={cardSides.backDir}
           isFlipped={isFlipped}
           onFlip={flipCard}
+          showAudioButton={Boolean(audioStateBySentenceId[currentSentence?.sentenceId]?.audioUrl)}
+          onAudioPlay={playCurrentSentenceAudio}
         />
       )}
 

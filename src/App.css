@@ -171,6 +171,30 @@ a.primaryButton {
   font-size: 0.85rem;
 }
 
+.sentenceHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sentenceAudioPlayButton {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #8ed0b5;
+  border-radius: 50%;
+  background: #f4fcf8;
+  color: #145a47;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sentenceAudioPlayButton svg {
+  width: 16px;
+  height: 16px;
+}
+
 .sentenceBody {
   min-height: 230px;
   padding: 18px 16px 24px;
@@ -863,6 +887,250 @@ a.primaryButton {
 
 .librarySetMetaItem {
   font-variant-numeric: tabular-nums;
+}
+
+.librarySetViewPage {
+  max-width: 760px;
+}
+
+.librarySetTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.librarySetTopLink {
+  margin-top: 0;
+}
+
+.librarySetTopStudyButton {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.librarySetSlideSection {
+  margin-top: 14px;
+}
+
+.librarySetSlideWrap {
+  display: block;
+}
+
+.librarySetSlideCard {
+  background: linear-gradient(180deg, #effaf4 0%, #e8f7ef 100%);
+  border: 1px solid #c8ebda;
+  border-radius: 16px;
+  padding: 18px 16px;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.librarySetSlideCard.isDragging {
+  cursor: grabbing;
+}
+
+.librarySetSlideFront {
+  margin: 0;
+  color: #145a47;
+  font-size: clamp(1.4rem, 5.4vw, 2rem);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.librarySetDots {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.librarySetDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.librarySetDot.isActive {
+  background: #0f766e;
+}
+
+.librarySetMiddleSpacer {
+  height: 18px;
+}
+
+.librarySetMetaSection {
+  margin-top: 0;
+}
+
+.librarySetMetaSection h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.librarySetAuthorRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.librarySetAuthorAvatar {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e0f2fe;
+  font-size: 1rem;
+}
+
+.librarySetAuthorName,
+.librarySetWordCount {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.librarySetAuthorDivider {
+  width: 1px;
+  height: 16px;
+  background: #cbd5e1;
+}
+
+.librarySentenceRow--showcase {
+  background: linear-gradient(180deg, #effaf4 0%, #e8f7ef 100%);
+  border: 1px solid #c8ebda;
+  border-radius: 16px;
+}
+
+.librarySentenceRow--showcase .librarySentenceFront {
+  color: #145a47;
+  font-size: 1.5rem;
+}
+
+.librarySentenceRow--showcase .librarySentenceBack {
+  color: #2f6f5c;
+  font-size: 1rem;
+}
+
+.librarySentenceRow--showcase .librarySentenceMemo {
+  color: #4b7b6a;
+}
+
+.librarySentenceAudioRow {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.libraryAudioButton {
+  min-height: 34px;
+  border: 1px solid #8ed0b5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #f4fcf8;
+  color: #145a47;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.libraryAudioButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.libraryAudioDone {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1f8a70;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.librarySentenceCardActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.librarySentenceIconButton {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #8ed0b5;
+  border-radius: 50%;
+  background: #f4fcf8;
+  color: #145a47;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.librarySentenceIconButton:hover {
+  background: #e8f7ef;
+  border-color: #6bbf9f;
+}
+
+.librarySentenceIconButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.librarySentenceIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.librarySentenceEditBlock {
+  display: grid;
+  gap: 6px;
+}
+
+.librarySentenceEditActions {
+  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.libraryDeleteModal {
+  border: 1px solid #c8ebda;
+  background: linear-gradient(180deg, #f6fdf9 0%, #ecfaf2 100%);
+}
+
+.libraryDeleteModalText {
+  margin: 0;
+  color: #2f6f5c;
+  font-size: 0.92rem;
+}
+
+.libraryDeleteModalPreview {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #bde7d4;
+  background: #ffffff;
+  color: #145a47;
+  line-height: 1.45;
 }
 
 .libraryFoldersSection {

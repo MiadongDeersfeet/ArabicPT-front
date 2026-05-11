@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
+const base = process.env.VITE_BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -15,8 +18,8 @@ export default defineConfig({
         short_name: 'ArabicPT',
         lang: 'ko-KR',
         description: '한국어 기반 아랍어 학습 PWA 서비스',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'portrait',
         theme_color: '#0f766e',

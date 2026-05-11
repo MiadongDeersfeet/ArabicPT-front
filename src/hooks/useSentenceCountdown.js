@@ -17,9 +17,9 @@ export function useSentenceCountdown({
     [defaultSeconds, maxSeconds, minSeconds],
   )
 
-  const [countdownEnabled, setCountdownEnabled] = useState(true)
+  const [countdownEnabled, setCountdownEnabled] = useState(false)
   const [countdownSeconds, setCountdownSeconds] = useState(defaultSeconds)
-  const [allowCountdown, setAllowCountdown] = useState(true)
+  const [allowCountdown, setAllowCountdown] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(defaultSeconds)
 
   const isCountdownRunning = useMemo(
@@ -28,9 +28,9 @@ export function useSentenceCountdown({
   )
 
   useEffect(() => {
-    // 문장이 바뀌면 자동 카운트다운을 다시 허용합니다.
-    setAllowCountdown(true)
-  }, [currentIndex])
+    // 문장이 바뀌면 현재 토글 상태에 맞춰 자동 카운트다운 허용을 동기화합니다.
+    setAllowCountdown(countdownEnabled)
+  }, [countdownEnabled, currentIndex])
 
   useEffect(() => {
     // 카운트다운 기본값이 바뀌면 표시 시간도 함께 맞춥니다.
@@ -41,9 +41,8 @@ export function useSentenceCountdown({
     (event) => {
       const enabled = event.target.checked
       setCountdownEnabled(enabled)
-      if (!enabled) {
-        setSecondsLeft(countdownSeconds)
-      }
+      setAllowCountdown(enabled)
+      setSecondsLeft(countdownSeconds)
     },
     [countdownSeconds],
   )

@@ -10,6 +10,8 @@ function SentenceBox({
   backDir = 'rtl',
   isFlipped = false,
   onFlip,
+  showAudioButton = false,
+  onAudioPlay,
 }) {
   const canFlip = typeof onFlip === 'function'
   const resolvedFrontText = frontText ?? text
@@ -21,6 +23,13 @@ function SentenceBox({
     if (event.code === 'Space' || event.code === 'Enter') {
       event.preventDefault()
       onFlip()
+    }
+  }
+
+  const handleAudioButtonClick = (event) => {
+    event.stopPropagation()
+    if (typeof onAudioPlay === 'function') {
+      onAudioPlay()
     }
   }
 
@@ -39,7 +48,36 @@ function SentenceBox({
           <span className="statusDot" />
           <strong>{status}</strong>
         </div>
-        <span className="sentenceProgress">{progress}</span>
+        <div className="sentenceHeaderActions">
+          <span className="sentenceProgress">{progress}</span>
+          {showAudioButton ? (
+            <button
+              type="button"
+              className="sentenceAudioPlayButton"
+              onClick={handleAudioButtonClick}
+              aria-label="문장 오디오 재생"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M14 5v14l-6-4H4V9h4z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M18 9a5 5 0 0 1 0 6M20.5 6.5a8.5 8.5 0 0 1 0 11"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="sentenceBody">
