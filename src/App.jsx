@@ -1,7 +1,10 @@
 import './App.css'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
 import Layout from './components/layout/Layout.jsx'
 import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
+import AuthCallback from './pages/AuthCallback.jsx'
 import Library from './pages/Library.jsx'
 import LibraryFolders from './pages/LibraryFolders.jsx'
 import LibraryFolderDetail from './pages/LibraryFolderDetail.jsx'
@@ -12,7 +15,10 @@ import UiKit from './pages/UiKit.jsx'
 
 function App() {
   return (
+    <AuthProvider>
     <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route
         path="/"
         element={
@@ -80,6 +86,7 @@ function App() {
         }
       />
     </Routes>
+    </AuthProvider>
   )
 }
 

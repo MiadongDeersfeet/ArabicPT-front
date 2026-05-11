@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import './Header.css'
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const { auth, logout } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -52,12 +55,26 @@ function Header() {
 
           <div className={`headerDropdownPanel${isOpen ? ' open' : ''}`}>
             <div className="siteActions">
-              <button type="button" className="headerGhostButton">
-                로그인
-              </button>
-              <button type="button" className="headerPrimaryButton">
-                회원가입
-              </button>
+              {auth ? (
+                <>
+                  <span className="headerUserName">{auth.name}</span>
+                  <button
+                    type="button"
+                    className="headerGhostButton"
+                    onClick={async () => { await logout(); navigate('/login') }}
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="headerPrimaryButton"
+                  onClick={() => navigate('/login')}
+                >
+                  로그인
+                </button>
+              )}
             </div>
           </div>
         </div>
