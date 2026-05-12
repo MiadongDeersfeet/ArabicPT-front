@@ -22,7 +22,7 @@ function Login() {
         sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, path)
       }
     }
-    window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`
+    window.location.assign(`${getApiBaseUrl()}/oauth2/authorization/google`)
   }
 
   return (

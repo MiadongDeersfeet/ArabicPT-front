@@ -6,7 +6,7 @@ import { getApiBaseUrl } from './baseUrl'
  * 백엔드의 Google OAuth2 로그인 진입 URL로 이동할 때 사용합니다.
  */
 export const requestGoogleLogin = () => {
-  window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`
+  window.location.assign(`${getApiBaseUrl()}/oauth2/authorization/google`)
 }
 
 /**

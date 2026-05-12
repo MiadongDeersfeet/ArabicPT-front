@@ -45,6 +45,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        // Spring OAuth는 브라우저 전체 이동이어야 함. 기본 navigateFallback(index.html)이
+        // /oauth2, /login/oauth2 를 SPA로 돌려 빈 화면이 나는 것을 막는다.
+        navigateFallbackDenylist: [/^\/oauth2/, /^\/login\/oauth2/, /^\/api/],
       },
     }),
   ],
