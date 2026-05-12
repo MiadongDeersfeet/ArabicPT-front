@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getApiBaseUrl } from '../api/baseUrl'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
@@ -12,8 +13,7 @@ function Login() {
   }, [auth, navigate])
 
   const handleGoogleLogin = () => {
-    const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-    window.location.href = `${base}/oauth2/authorization/google`
+    window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`
   }
 
   return (

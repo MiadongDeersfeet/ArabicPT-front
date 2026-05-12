@@ -1,11 +1,12 @@
 import axiosInstance from './axiosInstance'
+import { getApiBaseUrl } from './baseUrl'
 
 /**
  * 구글 로그인 요청
  * 백엔드의 Google OAuth2 로그인 진입 URL로 이동할 때 사용합니다.
  */
 export const requestGoogleLogin = () => {
-  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`
+  window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`
 }
 
 /**
