@@ -1,6 +1,7 @@
 import './App.css'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
+import RequireAuth from './components/auth/RequireAuth.jsx'
 import Layout from './components/layout/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
@@ -32,7 +33,9 @@ function App() {
         path="/library"
         element={
           <Layout>
-            <Library />
+            <RequireAuth>
+              <Library />
+            </RequireAuth>
           </Layout>
         }
       />
@@ -40,7 +43,9 @@ function App() {
         path="/library/folders"
         element={
           <Layout>
-            <LibraryFolders />
+            <RequireAuth>
+              <LibraryFolders />
+            </RequireAuth>
           </Layout>
         }
       />
@@ -48,7 +53,9 @@ function App() {
         path="/library/folders/:folderId"
         element={
           <Layout>
-            <LibraryFolderDetail />
+            <RequireAuth>
+              <LibraryFolderDetail />
+            </RequireAuth>
           </Layout>
         }
       />
@@ -56,7 +63,9 @@ function App() {
         path="/library/sets/new"
         element={
           <Layout>
-            <LibraryCreateSet />
+            <RequireAuth>
+              <LibraryCreateSet />
+            </RequireAuth>
           </Layout>
         }
       />
@@ -64,7 +73,9 @@ function App() {
         path="/library/sets/:setId"
         element={
           <Layout>
-            <LibrarySetDetail />
+            <RequireAuth>
+              <LibrarySetDetail />
+            </RequireAuth>
           </Layout>
         }
       />

@@ -1,18 +1,27 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getApiBaseUrl } from '../api/baseUrl'
+import { POST_LOGIN_REDIRECT_KEY } from '../constants/postLoginRedirect'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
 function Login() {
   const { auth } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (auth) navigate('/', { replace: true })
   }, [auth, navigate])
 
   const handleGoogleLogin = () => {
+    const from = location.state?.from
+    if (from?.pathname) {
+      const path = `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`
+      if (path && path !== '/login') {
+        sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, path)
+      }
+    }
     window.location.href = `${getApiBaseUrl()}/oauth2/authorization/google`
   }
 

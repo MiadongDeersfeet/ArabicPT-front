@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { POST_LOGIN_REDIRECT_KEY } from '../constants/postLoginRedirect'
 import { useAuth } from '../context/AuthContext'
 
 function AuthCallback() {
@@ -21,7 +22,12 @@ function AuthCallback() {
     }
 
     login({ accessToken, memberId, email, name, role })
-    navigate('/', { replace: true })
+
+    const saved = sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY)
+    sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY)
+    const target =
+      saved && saved !== '/login' && saved.startsWith('/') ? saved : '/'
+    navigate(target, { replace: true })
   }, [login, navigate])
 
   return (
