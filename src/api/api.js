@@ -18,7 +18,10 @@ export const getMyInfo = () => axiosInstance.get('/api/members/me')
 /** ApiResponseDTO.data — name, profileImage, email 등 */
 export const fetchMyMemberProfile = async () => {
   const response = await getMyInfo()
-  return response.data.data
+  const root = response?.data
+  const payload = root?.data !== undefined ? root.data : root
+  if (!payload || typeof payload !== 'object') return null
+  return payload
 }
 
 /**

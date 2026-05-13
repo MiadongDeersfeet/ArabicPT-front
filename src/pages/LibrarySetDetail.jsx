@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchMyMemberProfile } from '../api/api.js'
+import { getApiBaseUrl } from '../api/baseUrl.js'
 import { getSet } from '../api/sentenceSetApi.js'
 import { getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
 import { generateSentenceAudio, getSentenceAudio } from '../api/audioApi.js'
@@ -8,6 +9,15 @@ import { useAuth } from '../context/AuthContext.jsx'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
 import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
 import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
+
+function resolveProfileImageUrl(raw) {
+  if (raw == null || String(raw).trim() === '') return null
+  const u = String(raw).trim()
+  if (u.startsWith('http://') || u.startsWith('https://')) return u
+  const base = getApiBaseUrl().replace(/\/$/, '')
+  if (u.startsWith('/')) return `${base}${u}`
+  return `${base}/${u}`
+}
 
 function StarIcon({ filled }) {
   return (
@@ -85,9 +95,9 @@ function LibrarySetDetail() {
   }, [memberProfile?.name, auth?.name])
 
   const profileImageUrl = useMemo(() => {
-    const u = memberProfile?.profileImage
-    return u != null && String(u).trim() !== '' ? String(u).trim() : null
-  }, [memberProfile?.profileImage])
+    const raw = memberProfile?.profileImage ?? memberProfile?.profile_image
+    return resolveProfileImageUrl(raw)
+  }, [memberProfile])
 
   useEffect(() => {
     if (!setIdValid) return
@@ -133,9 +143,13 @@ function LibrarySetDetail() {
       try {
         const p = await fetchMyMemberProfile()
         if (!alive) return
+        if (!p) {
+          setMemberProfile(null)
+          return
+        }
         setMemberProfile({
-          name: p?.name ?? '',
-          profileImage: p?.profileImage ?? null,
+          name: p?.name ?? p?.NAME ?? '',
+          profileImage: p?.profileImage ?? p?.profile_image ?? null,
         })
       } catch {
         if (alive) setMemberProfile(null)
