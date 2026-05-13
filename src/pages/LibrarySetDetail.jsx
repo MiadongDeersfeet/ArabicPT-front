@@ -1,10 +1,55 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSet } from '../api/sentenceSetApi.js'
-import { deleteSentence, getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
+import { createSentence, deleteSentence, getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
 import { generateSentenceAudio, getSentenceAudio } from '../api/audioApi.js'
 
 const DUMMY_AUTHOR = 'noorismee'
+
+const FRONT_LANG = 'ko'
+const BACK_LANG = 'ar'
+
+function makeDraftId() {
+  return `draft-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
+}
+
+function emptyDraft() {
+  return { id: makeDraftId(), frontText: '', backText: '', memo: '' }
+}
+
+function validateDraftCards(drafts) {
+  const partialLines = []
+  const valid = []
+
+  drafts.forEach((card, index) => {
+    const front = card.frontText.trim()
+    const back = card.backText.trim()
+    const memoTrim = (card.memo ?? '').trim()
+    const empty = !front && !back && !memoTrim
+    if (empty) return
+    if (!front || !back) {
+      partialLines.push(index + 1)
+    } else {
+      valid.push({ front, back, memo: memoTrim })
+    }
+  })
+
+  if (partialLines.length > 0) {
+    return {
+      ok: false,
+      message: `추가 카드 ${partialLines.join(', ')}번: 앞면(문장)과 뒷면(뜻)을 모두 입력해 주세요.`,
+    }
+  }
+
+  if (valid.length === 0) {
+    return {
+      ok: false,
+      message: '앞면과 뒷면이 모두 입력된 카드를 최소 1개 작성한 뒤 저장해 주세요.',
+    }
+  }
+
+  return { ok: true, rows: valid }
+}
 
 function LibrarySetDetail() {
   const { setId: setIdParam } = useParams()
@@ -25,6 +70,9 @@ function LibrarySetDetail() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [deleteTargetSentence, setDeleteTargetSentence] = useState(null)
   const [deletingSentence, setDeletingSentence] = useState(false)
+  const [draftCards, setDraftCards] = useState(() => [emptyDraft()])
+  const [savingNewSentences, setSavingNewSentences] = useState(false)
+  const [addSentenceError, setAddSentenceError] = useState('')
   const [dragging, setDragging] = useState(false)
   const dragStartXRef = useRef(0)
   const dragDiffXRef = useRef(0)
@@ -234,13 +282,91 @@ function LibrarySetDetail() {
     }
   }
 
+  const addDraftRow = () => {
+    setDraftCards((prev) => [...prev, emptyDraft()])
+  }
+
+  const removeDraftRow = (id) => {
+    setDraftCards((prev) => {
+      if (prev.length <= 1) return prev
+      return prev.filter((c) => c.id !== id)
+    })
+  }
+
+  const updateDraftRow = (id, field, value) => {
+    setDraftCards((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
+  }
+
+  const handleSaveNewSentences = async () => {
+    if (!setIdValid || savingNewSentences) return
+    const validation = validateDraftCards(draftCards)
+    if (!validation.ok) {
+      setAddSentenceError(validation.message)
+      return
+    }
+    setAddSentenceError('')
+    setSavingNewSentences(true)
+    try {
+      const created = []
+      for (const row of validation.rows) {
+        const s = await createSentence(setIdNum, {
+          frontLang: FRONT_LANG,
+          frontText: row.front,
+          backLang: BACK_LANG,
+          backText: row.back,
+          memo: row.memo === '' ? null : row.memo,
+        })
+        created.push(s)
+      }
+
+      setSentences((prev) => [...prev, ...created])
+      setAudioStateBySentenceId((prev) => {
+        const next = { ...prev }
+        for (const s of created) {
+          next[s.sentenceId] = { status: 'none', audioUrl: null }
+        }
+        return next
+      })
+      setModifiedSentenceMap((prev) => {
+        const next = { ...prev }
+        for (const s of created) {
+          next[s.sentenceId] = false
+        }
+        return next
+      })
+      setSetMeta((prev) =>
+        prev
+          ? {
+              ...prev,
+              sentenceCount: (prev.sentenceCount ?? 0) + created.length,
+            }
+          : prev,
+      )
+      setDraftCards([emptyDraft()])
+    } catch (e) {
+      console.error(e)
+      setAddSentenceError(
+        e?.response?.data?.message ??
+          e?.response?.data?.data?.reason ??
+          e?.message ??
+          '문장 추가 중 오류가 발생했습니다.',
+      )
+    } finally {
+      setSavingNewSentences(false)
+    }
+  }
+
   const handleDeleteSentence = async () => {
     if (!deleteTargetSentence || deletingSentence) return
     const sentenceId = deleteTargetSentence.sentenceId
+    const nextSentenceCount = sentences.length - 1
     setDeletingSentence(true)
     try {
       await deleteSentence(sentenceId)
       setSentences((prev) => prev.filter((row) => row.sentenceId !== sentenceId))
+      setSetMeta((prev) =>
+        prev ? { ...prev, sentenceCount: Math.max(0, nextSentenceCount) } : prev,
+      )
       setAudioStateBySentenceId((prev) => {
         const next = { ...prev }
         delete next[sentenceId]
@@ -341,11 +467,87 @@ function LibrarySetDetail() {
           <p className="libraryStatusText">불러오는 중입니다.</p>
         ) : listError ? (
           <p className="libraryStatusText">불러오지 못했습니다.</p>
-        ) : sentences.length === 0 ? (
-          <p className="libraryStatusText">
-            아직 이 세트에 문장이 없습니다. 첫 문장을 추가해보세요.
-          </p>
         ) : (
+          <>
+            <div className="librarySetAddSection introCard">
+              <h4 className="librarySectionTitle">새 카드 추가</h4>
+              <p className="libraryCreateHint">
+                아래에 문장을 입력한 뒤 &quot;세트에 저장&quot;을 누르면 이 세트에 추가됩니다. 저장된 줄에서는
+                바로 아래처럼 &quot;음성 생성&quot;으로 오디오를 만들 수 있습니다.
+              </p>
+              <ul className="createSetCardList">
+                {draftCards.map((card, index) => (
+                  <li key={card.id} className="createSetCard">
+                    <div className="createSetCardToolbar">
+                      <span className="createSetCardNumber">{index + 1}</span>
+                      <button
+                        type="button"
+                        className="createSetCardRemove"
+                        onClick={() => removeDraftRow(card.id)}
+                        disabled={draftCards.length <= 1 || savingNewSentences}
+                        aria-label={`추가 카드 ${index + 1} 입력 행 삭제`}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                    <div className="createSetCardFields">
+                      <label className="uiFieldLabel">문장 (앞면)</label>
+                      <textarea
+                        className="uiInput libraryTextarea"
+                        rows={2}
+                        value={card.frontText}
+                        onChange={(e) => updateDraftRow(card.id, 'frontText', e.target.value)}
+                        disabled={savingNewSentences}
+                      />
+                      <label className="uiFieldLabel">뜻 (뒷면)</label>
+                      <textarea
+                        className="uiInput libraryTextarea"
+                        rows={2}
+                        value={card.backText}
+                        onChange={(e) => updateDraftRow(card.id, 'backText', e.target.value)}
+                        disabled={savingNewSentences}
+                      />
+                      <label className="uiFieldLabel">메모 (선택)</label>
+                      <input
+                        className="uiInput"
+                        value={card.memo}
+                        onChange={(e) => updateDraftRow(card.id, 'memo', e.target.value)}
+                        disabled={savingNewSentences}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="librarySetAddActions">
+                <button
+                  type="button"
+                  className="headerGhostButton"
+                  onClick={addDraftRow}
+                  disabled={savingNewSentences}
+                >
+                  + 입력 행 추가
+                </button>
+                <button
+                  type="button"
+                  className="primaryButton"
+                  onClick={handleSaveNewSentences}
+                  disabled={savingNewSentences || savingEdit}
+                >
+                  {savingNewSentences ? '저장 중…' : '세트에 저장'}
+                </button>
+              </div>
+              {addSentenceError ? (
+                <p className="libraryFormError" role="alert">
+                  {addSentenceError}
+                </p>
+              ) : null}
+            </div>
+
+            {sentences.length === 0 ? (
+              <p className="libraryStatusText">
+                아직 이 세트에 저장된 문장이 없습니다. 위에서 카드를 추가해 보세요.
+              </p>
+            ) : (
           <ul className="librarySentenceList">
             {sentences.map((sentence) => (
               <li key={sentence.sentenceId} className="librarySentenceRow librarySentenceRow--showcase">
@@ -508,6 +710,8 @@ function LibrarySetDetail() {
               </li>
             ))}
           </ul>
+            )}
+          </>
         )}
       </div>
       {deleteTargetSentence ? (

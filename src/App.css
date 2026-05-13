@@ -777,6 +777,22 @@ a.primaryButton {
   font-size: 0.9rem;
 }
 
+.librarySetAddSection {
+  margin-bottom: 16px;
+}
+
+.librarySetAddSection h4.librarySectionTitle {
+  margin-bottom: 6px;
+}
+
+.librarySetAddActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 12px;
+}
+
 .librarySentenceBlock {
   margin-top: 16px;
 }
