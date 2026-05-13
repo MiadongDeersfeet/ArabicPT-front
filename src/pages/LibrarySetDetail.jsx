@@ -1,57 +1,60 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { fetchMyMemberProfile } from '../api/api.js'
 import { getSet } from '../api/sentenceSetApi.js'
-import { createSentence, deleteSentence, getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
+import { getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
 import { generateSentenceAudio, getSentenceAudio } from '../api/audioApi.js'
+import { useAuth } from '../context/AuthContext.jsx'
+import SentenceBox from '../components/ui/SentenceBox.jsx'
+import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
+import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
 
-const DUMMY_AUTHOR = 'noorismee'
-
-const FRONT_LANG = 'ko'
-const BACK_LANG = 'ar'
-
-function makeDraftId() {
-  return `draft-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
+function StarIcon({ filled }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="librarySetQuizletIconSvg">
+      <path
+        d="M12 2l2.9 7.4H22l-6 4.6 2.3 7L12 17.8 5.7 21l2.3-7-6-4.6h7.1L12 2z"
+        fill={filled ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
-function emptyDraft() {
-  return { id: makeDraftId(), frontText: '', backText: '', memo: '' }
+function SpeakerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="librarySetQuizletIconSvg">
+      <path
+        d="M11 5L6 9H3v6h3l5 4V5zm8.5 3.5a5 5 0 010 7M17 9a3 3 0 010 6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
-function validateDraftCards(drafts) {
-  const partialLines = []
-  const valid = []
-
-  drafts.forEach((card, index) => {
-    const front = card.frontText.trim()
-    const back = card.backText.trim()
-    const memoTrim = (card.memo ?? '').trim()
-    const empty = !front && !back && !memoTrim
-    if (empty) return
-    if (!front || !back) {
-      partialLines.push(index + 1)
-    } else {
-      valid.push({ front, back, memo: memoTrim })
-    }
-  })
-
-  if (partialLines.length > 0) {
-    return {
-      ok: false,
-      message: `추가 카드 ${partialLines.join(', ')}번: 앞면(문장)과 뒷면(뜻)을 모두 입력해 주세요.`,
-    }
-  }
-
-  if (valid.length === 0) {
-    return {
-      ok: false,
-      message: '앞면과 뒷면이 모두 입력된 카드를 최소 1개 작성한 뒤 저장해 주세요.',
-    }
-  }
-
-  return { ok: true, rows: valid }
+function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="librarySetQuizletIconSvg">
+      <path
+        d="M12 20h9M16.5 3.5a2.12 2.12 0 113 3L8 18l-4 1 1-4 11.5-11.5z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
 function LibrarySetDetail() {
+  const { auth } = useAuth()
   const { setId: setIdParam } = useParams()
   const setIdNum = Number(setIdParam)
   const setIdValid = Number.isInteger(setIdNum) && setIdNum > 0
@@ -60,22 +63,88 @@ function LibrarySetDetail() {
   const [sentences, setSentences] = useState([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState(false)
-  const [activeSlide, setActiveSlide] = useState(0)
+  const [previewIndex, setPreviewIndex] = useState(0)
+  const [isFlipped, setIsFlipped] = useState(false)
+  const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
   const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
   const [modifiedSentenceMap, setModifiedSentenceMap] = useState({})
+  const [memberProfile, setMemberProfile] = useState(null)
+
+  const [starredIds, setStarredIds] = useState(() => new Set())
   const [editingSentenceId, setEditingSentenceId] = useState(null)
   const [editingFrontText, setEditingFrontText] = useState('')
   const [editingBackText, setEditingBackText] = useState('')
   const [editingMemo, setEditingMemo] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
-  const [deleteTargetSentence, setDeleteTargetSentence] = useState(null)
-  const [deletingSentence, setDeletingSentence] = useState(false)
-  const [draftCards, setDraftCards] = useState(() => [emptyDraft()])
-  const [savingNewSentences, setSavingNewSentences] = useState(false)
-  const [addSentenceError, setAddSentenceError] = useState('')
-  const [dragging, setDragging] = useState(false)
-  const dragStartXRef = useRef(0)
-  const dragDiffXRef = useRef(0)
+
+  const starStorageKey = useMemo(() => `arabicpt-set-stars-${setIdNum}`, [setIdNum])
+
+  const displayName = useMemo(() => {
+    const n = (memberProfile?.name ?? auth?.name ?? '').trim()
+    return n || '회원'
+  }, [memberProfile?.name, auth?.name])
+
+  const profileImageUrl = useMemo(() => {
+    const u = memberProfile?.profileImage
+    return u != null && String(u).trim() !== '' ? String(u).trim() : null
+  }, [memberProfile?.profileImage])
+
+  useEffect(() => {
+    if (!setIdValid) return
+    try {
+      const raw = localStorage.getItem(starStorageKey)
+      if (raw) {
+        const arr = JSON.parse(raw)
+        if (Array.isArray(arr)) setStarredIds(new Set(arr.map(Number).filter(Number.isFinite)))
+      } else {
+        setStarredIds(new Set())
+      }
+    } catch {
+      setStarredIds(new Set())
+    }
+  }, [setIdValid, starStorageKey])
+
+  const persistStars = useCallback(
+    (next) => {
+      setStarredIds(next)
+      try {
+        localStorage.setItem(starStorageKey, JSON.stringify([...next]))
+      } catch {
+        /* ignore */
+      }
+    },
+    [starStorageKey],
+  )
+
+  const toggleStar = (sentenceId) => {
+    const next = new Set(starredIds)
+    if (next.has(sentenceId)) next.delete(sentenceId)
+    else next.add(sentenceId)
+    persistStars(next)
+  }
+
+  useEffect(() => {
+    if (!auth?.accessToken) {
+      setMemberProfile(null)
+      return
+    }
+    let alive = true
+    ;(async () => {
+      try {
+        const p = await fetchMyMemberProfile()
+        if (!alive) return
+        setMemberProfile({
+          name: p?.name ?? '',
+          profileImage: p?.profileImage ?? null,
+        })
+      } catch {
+        if (alive) setMemberProfile(null)
+      }
+    })()
+    return () => {
+      alive = false
+    }
+  }, [auth?.accessToken])
 
   useEffect(() => {
     if (!setIdValid) return
@@ -88,7 +157,9 @@ function LibrarySetDetail() {
         if (!alive) return
         setSetMeta(meta)
         setSentences(Array.isArray(list) ? list : [])
-        setActiveSlide(0)
+        setPreviewIndex(0)
+        setIsFlipped(false)
+        setEditingSentenceId(null)
       } catch (e) {
         console.error(e)
         if (!alive) return
@@ -104,7 +175,47 @@ function LibrarySetDetail() {
     }
   }, [setIdNum, setIdValid])
 
-  const visibleSlides = useMemo(() => sentences.slice(0, 8), [sentences])
+  const toggleCardSideOrder = useCallback(() => {
+    setCardSideReversed((prev) => {
+      const next = !prev
+      persistCardSideReversed(next)
+      return next
+    })
+    setIsFlipped(false)
+  }, [])
+
+  const flipCard = useCallback(() => {
+    setIsFlipped((prev) => !prev)
+  }, [])
+
+  useEffect(() => {
+    if (previewIndex >= sentences.length && sentences.length > 0) {
+      setPreviewIndex(0)
+      setIsFlipped(false)
+    }
+  }, [previewIndex, sentences.length])
+
+  useEffect(() => {
+    const handleSpaceFlip = (event) => {
+      const targetTag = event.target?.tagName?.toLowerCase()
+      const isEditable =
+        targetTag === 'input' ||
+        targetTag === 'textarea' ||
+        targetTag === 'select' ||
+        event.target?.isContentEditable
+
+      if (isEditable) return
+
+      if (event.code === 'Space') {
+        event.preventDefault()
+        flipCard()
+      }
+    }
+
+    window.addEventListener('keydown', handleSpaceFlip)
+    return () => window.removeEventListener('keydown', handleSpaceFlip)
+  }, [flipCard])
+
   const wordCount = setMeta?.sentenceCount ?? sentences.length
   const backendBaseUrl = ''
 
@@ -147,39 +258,16 @@ function LibrarySetDetail() {
     }
   }, [sentences])
 
-  const moveSlide = (delta) => {
-    if (visibleSlides.length === 0) return
-    setActiveSlide((prev) => {
-      const next = prev + delta
-      if (next < 0) return visibleSlides.length - 1
-      if (next >= visibleSlides.length) return 0
-      return next
-    })
+  const goPreviewPrev = () => {
+    if (sentences.length === 0) return
+    setIsFlipped(false)
+    setPreviewIndex((prev) => (prev === 0 ? sentences.length - 1 : prev - 1))
   }
 
-  const handleSlidePointerDown = (event) => {
-    if (visibleSlides.length <= 1) return
-    dragStartXRef.current = event.clientX
-    dragDiffXRef.current = 0
-    setDragging(true)
-  }
-
-  const handleSlidePointerMove = (event) => {
-    if (!dragging) return
-    dragDiffXRef.current = event.clientX - dragStartXRef.current
-  }
-
-  const handleSlidePointerEnd = () => {
-    if (!dragging) return
-    const threshold = 40
-    const movedX = dragDiffXRef.current
-    if (movedX <= -threshold) {
-      moveSlide(1)
-    } else if (movedX >= threshold) {
-      moveSlide(-1)
-    }
-    setDragging(false)
-    dragDiffXRef.current = 0
+  const goPreviewNext = () => {
+    if (sentences.length === 0) return
+    setIsFlipped(false)
+    setPreviewIndex((prev) => (prev === sentences.length - 1 ? 0 : prev + 1))
   }
 
   const getFullAudioUrl = (audioUrl) => {
@@ -227,6 +315,15 @@ function LibrarySetDetail() {
         ...prev,
         [sentenceId]: { ...(prev[sentenceId] ?? {}), status: 'error' },
       }))
+    }
+  }
+
+  const handleAudioIconClick = (sentenceId) => {
+    const st = audioStateBySentenceId[sentenceId]?.status
+    if (st === 'done') {
+      void handlePlayAudio(sentenceId)
+    } else {
+      void handleGenerateAudio(sentenceId)
     }
   }
 
@@ -282,112 +379,12 @@ function LibrarySetDetail() {
     }
   }
 
-  const addDraftRow = () => {
-    setDraftCards((prev) => [...prev, emptyDraft()])
-  }
+  const starredCount = starredIds.size
 
-  const removeDraftRow = (id) => {
-    setDraftCards((prev) => {
-      if (prev.length <= 1) return prev
-      return prev.filter((c) => c.id !== id)
-    })
-  }
-
-  const updateDraftRow = (id, field, value) => {
-    setDraftCards((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
-  }
-
-  const handleSaveNewSentences = async () => {
-    if (!setIdValid || savingNewSentences) return
-    const validation = validateDraftCards(draftCards)
-    if (!validation.ok) {
-      setAddSentenceError(validation.message)
-      return
-    }
-    setAddSentenceError('')
-    setSavingNewSentences(true)
-    try {
-      const created = []
-      for (const row of validation.rows) {
-        const s = await createSentence(setIdNum, {
-          frontLang: FRONT_LANG,
-          frontText: row.front,
-          backLang: BACK_LANG,
-          backText: row.back,
-          memo: row.memo === '' ? null : row.memo,
-        })
-        created.push(s)
-      }
-
-      setSentences((prev) => [...prev, ...created])
-      setAudioStateBySentenceId((prev) => {
-        const next = { ...prev }
-        for (const s of created) {
-          next[s.sentenceId] = { status: 'none', audioUrl: null }
-        }
-        return next
-      })
-      setModifiedSentenceMap((prev) => {
-        const next = { ...prev }
-        for (const s of created) {
-          next[s.sentenceId] = false
-        }
-        return next
-      })
-      setSetMeta((prev) =>
-        prev
-          ? {
-              ...prev,
-              sentenceCount: (prev.sentenceCount ?? 0) + created.length,
-            }
-          : prev,
-      )
-      setDraftCards([emptyDraft()])
-    } catch (e) {
-      console.error(e)
-      setAddSentenceError(
-        e?.response?.data?.message ??
-          e?.response?.data?.data?.reason ??
-          e?.message ??
-          '문장 추가 중 오류가 발생했습니다.',
-      )
-    } finally {
-      setSavingNewSentences(false)
-    }
-  }
-
-  const handleDeleteSentence = async () => {
-    if (!deleteTargetSentence || deletingSentence) return
-    const sentenceId = deleteTargetSentence.sentenceId
-    const nextSentenceCount = sentences.length - 1
-    setDeletingSentence(true)
-    try {
-      await deleteSentence(sentenceId)
-      setSentences((prev) => prev.filter((row) => row.sentenceId !== sentenceId))
-      setSetMeta((prev) =>
-        prev ? { ...prev, sentenceCount: Math.max(0, nextSentenceCount) } : prev,
-      )
-      setAudioStateBySentenceId((prev) => {
-        const next = { ...prev }
-        delete next[sentenceId]
-        return next
-      })
-      setModifiedSentenceMap((prev) => {
-        const next = { ...prev }
-        delete next[sentenceId]
-        return next
-      })
-      if (editingSentenceId === sentenceId) {
-        setEditingSentenceId(null)
-      }
-      setDeleteTargetSentence(null)
-    } catch (error) {
-      console.error(error)
-      window.alert('문장 삭제에 실패했습니다.')
-    } finally {
-      setDeletingSentence(false)
-    }
-  }
+  const previewSentence =
+    sentences.length === 0 ? null : sentences[Math.min(previewIndex, sentences.length - 1)]
+  const cardSides = resolveCardSides(previewSentence, cardSideReversed)
+  const previewAudioStatus = previewSentence ? audioStateBySentenceId[previewSentence.sentenceId]?.status : undefined
 
   if (!setIdValid) {
     return (
@@ -408,43 +405,61 @@ function LibrarySetDetail() {
         <Link to="/library" className="textLink librarySetTopLink">
           ← 라이브러리
         </Link>
-        <Link to={`/study/sets/${setIdNum}`} className="primaryButton librarySetTopStudyButton">
-          학습하기
-        </Link>
+        <div className="librarySetTopActions">
+          <Link to={`/library/sets/${setIdNum}/edit`} className="headerGhostButton librarySetTopEditButton">
+            카드 편집
+          </Link>
+          <Link to={`/study/sets/${setIdNum}`} className="primaryButton librarySetTopStudyButton">
+            학습하기
+          </Link>
+        </div>
       </div>
 
-      <section className="librarySetSlideSection">
+      <section className="librarySetSlideSection librarySetPreviewSection">
+        {!loading && !listError && sentences.length > 0 ? (
+          <div className="librarySetPreviewHeadingRow">
+            <h3 className="librarySetPreviewHeading">카드 미리보기</h3>
+            <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
+          </div>
+        ) : null}
         {loading ? (
           <p className="libraryStatusText">불러오는 중입니다.</p>
         ) : listError ? (
           <p className="libraryStatusText">불러오지 못했습니다.</p>
-        ) : visibleSlides.length === 0 ? (
+        ) : sentences.length === 0 ? (
           <p className="libraryStatusText">표시할 문장이 없습니다.</p>
         ) : (
-          <div className="librarySetSlideWrap">
-            <article
-              className={dragging ? 'librarySetSlideCard isDragging' : 'librarySetSlideCard'}
-              onPointerDown={handleSlidePointerDown}
-              onPointerMove={handleSlidePointerMove}
-              onPointerUp={handleSlidePointerEnd}
-              onPointerCancel={handleSlidePointerEnd}
-              onPointerLeave={handleSlidePointerEnd}
-              aria-label="문장 카드 슬라이드"
-            >
-              <p className="librarySetSlideFront" dir="auto">
-                {visibleSlides[activeSlide]?.frontText}
-              </p>
-            </article>
-          </div>
+          <>
+            <div className="librarySetPreviewSentenceWrap">
+              <SentenceBox
+                className="librarySetPreviewSentenceBox"
+                title="문장 세트 카드 미리보기"
+                status="미리보기"
+                progress={`문장 ${previewIndex + 1} / ${sentences.length}`}
+                frontText={cardSides.frontText}
+                backText={cardSides.backText}
+                frontDir={cardSides.frontDir}
+                backDir={cardSides.backDir}
+                isFlipped={isFlipped}
+                onFlip={flipCard}
+                showAudioButton={Boolean(previewSentence)}
+                audioButtonDisabled={previewAudioStatus === 'loading'}
+                onAudioPlay={() => {
+                  if (!previewSentence) return
+                  handleAudioIconClick(previewSentence.sentenceId)
+                }}
+              />
+            </div>
+            <div className="studyActionRow librarySetPreviewActionRow">
+              <button type="button" className="headerGhostButton" onClick={goPreviewPrev}>
+                이전 문장
+              </button>
+              <button type="button" className="headerPrimaryButton" onClick={goPreviewNext}>
+                다음 문장
+              </button>
+            </div>
+          </>
         )}
-        <div className="librarySetDots" aria-hidden="true">
-          {visibleSlides.map((_, index) => (
-            <span
-              key={`dot-${index}`}
-              className={index === activeSlide ? 'librarySetDot isActive' : 'librarySetDot'}
-            />
-          ))}
-        </div>
       </section>
 
       <section className="librarySetMiddleSpacer" aria-hidden="true" />
@@ -452,309 +467,187 @@ function LibrarySetDetail() {
       <section className="librarySetMetaSection introCard">
         <h2>{setMeta?.setName ?? '문장 세트'}</h2>
         <div className="librarySetAuthorRow">
-          <span className="librarySetAuthorAvatar" aria-hidden="true">
-            🌊
-          </span>
-          <span className="librarySetAuthorName">{DUMMY_AUTHOR}</span>
+          {profileImageUrl ? (
+            <img
+              src={profileImageUrl}
+              alt=""
+              className="librarySetAuthorAvatar librarySetAuthorAvatar--photo"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="librarySetAuthorAvatar" aria-hidden="true">
+              🌊
+            </span>
+          )}
+          <span className="librarySetAuthorName">{displayName}</span>
           <span className="librarySetAuthorDivider" aria-hidden="true" />
           <span className="librarySetWordCount">{wordCount} 단어</span>
         </div>
       </section>
 
       <div className="librarySentenceBlock">
-        <h3 className="librarySectionTitle">앞/뒷면 문장</h3>
         {loading ? (
           <p className="libraryStatusText">불러오는 중입니다.</p>
         ) : listError ? (
           <p className="libraryStatusText">불러오지 못했습니다.</p>
+        ) : sentences.length === 0 ? (
+          <div className="introCard librarySetDetailEmptyCta">
+            <p className="libraryStatusText" style={{ marginBottom: 12 }}>
+              아직 이 세트에 문장이 없습니다.
+            </p>
+            <Link to={`/library/sets/${setIdNum}/edit`} className="primaryButton">
+              카드 편집에서 추가하기
+            </Link>
+          </div>
         ) : (
-          <>
-            <div className="librarySetAddSection introCard">
-              <h4 className="librarySectionTitle">새 카드 추가</h4>
-              <p className="libraryCreateHint">
-                아래에 문장을 입력한 뒤 &quot;세트에 저장&quot;을 누르면 이 세트에 추가됩니다. 저장된 줄에서는
-                바로 아래처럼 &quot;음성 생성&quot;으로 오디오를 만들 수 있습니다.
-              </p>
-              <ul className="createSetCardList">
-                {draftCards.map((card, index) => (
-                  <li key={card.id} className="createSetCard">
-                    <div className="createSetCardToolbar">
-                      <span className="createSetCardNumber">{index + 1}</span>
-                      <button
-                        type="button"
-                        className="createSetCardRemove"
-                        onClick={() => removeDraftRow(card.id)}
-                        disabled={draftCards.length <= 1 || savingNewSentences}
-                        aria-label={`추가 카드 ${index + 1} 입력 행 삭제`}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                    <div className="createSetCardFields">
-                      <label className="uiFieldLabel">문장 (앞면)</label>
-                      <textarea
-                        className="uiInput libraryTextarea"
-                        rows={2}
-                        value={card.frontText}
-                        onChange={(e) => updateDraftRow(card.id, 'frontText', e.target.value)}
-                        disabled={savingNewSentences}
-                      />
-                      <label className="uiFieldLabel">뜻 (뒷면)</label>
-                      <textarea
-                        className="uiInput libraryTextarea"
-                        rows={2}
-                        value={card.backText}
-                        onChange={(e) => updateDraftRow(card.id, 'backText', e.target.value)}
-                        disabled={savingNewSentences}
-                      />
-                      <label className="uiFieldLabel">메모 (선택)</label>
-                      <input
-                        className="uiInput"
-                        value={card.memo}
-                        onChange={(e) => updateDraftRow(card.id, 'memo', e.target.value)}
-                        disabled={savingNewSentences}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="librarySetAddActions">
-                <button
-                  type="button"
-                  className="headerGhostButton"
-                  onClick={addDraftRow}
-                  disabled={savingNewSentences}
-                >
-                  + 입력 행 추가
-                </button>
-                <button
-                  type="button"
-                  className="primaryButton"
-                  onClick={handleSaveNewSentences}
-                  disabled={savingNewSentences || savingEdit}
-                >
-                  {savingNewSentences ? '저장 중…' : '세트에 저장'}
-                </button>
+          <div className="librarySetQuizletPanel">
+            <div className="librarySetQuizletPanelHeader">
+              <div>
               </div>
-              {addSentenceError ? (
-                <p className="libraryFormError" role="alert">
-                  {addSentenceError}
-                </p>
-              ) : null}
+              <div className="librarySetQuizletPanelMeta">
+                <span className="librarySetQuizletStarCount" aria-live="polite">
+                  <StarIcon filled />
+                  <span className="librarySetQuizletStarCountNum">{starredCount}</span>
+                  개 표시
+                </span>
+                {/*<Link to={`/library/sets/${setIdNum}/edit`} className="textLink librarySetQuizletEditAllLink">
+                  전체 편집
+                </Link>*/}
+              </div>
             </div>
 
-            {sentences.length === 0 ? (
-              <p className="libraryStatusText">
-                아직 이 세트에 저장된 문장이 없습니다. 위에서 카드를 추가해 보세요.
-              </p>
-            ) : (
-          <ul className="librarySentenceList">
-            {sentences.map((sentence) => (
-              <li key={sentence.sentenceId} className="librarySentenceRow librarySentenceRow--showcase">
-                <div className="librarySentenceCardActionRow">
-                  <button
-                    type="button"
-                    className="librarySentenceIconButton"
-                    aria-label="문장 수정"
-                    onClick={() => startEditingSentence(sentence)}
-                    disabled={savingEdit}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className="librarySentenceIcon">
-                      <path
-                        d="M12 20h9"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M16.5 3.5a2.12 2.12 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="librarySentenceIconButton"
-                    aria-label="문장 삭제"
-                    onClick={() => setDeleteTargetSentence(sentence)}
-                    disabled={savingEdit || deletingSentence}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className="librarySentenceIcon">
-                      <path
-                        d="M3 6h18"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M8 6V4h8v2M6 6l1 14h10l1-14"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M10 10v6M14 10v6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {editingSentenceId === sentence.sentenceId ? (
-                  <div className="librarySentenceEditBlock">
-                    <label className="uiFieldLabel">문장</label>
-                    <textarea
-                      className="uiInput libraryTextarea"
-                      rows={2}
-                      value={editingFrontText}
-                      onChange={(event) => setEditingFrontText(event.target.value)}
-                    />
-                    <label className="uiFieldLabel">뜻</label>
-                    <textarea
-                      className="uiInput libraryTextarea"
-                      rows={2}
-                      value={editingBackText}
-                      onChange={(event) => setEditingBackText(event.target.value)}
-                    />
-                    <label className="uiFieldLabel">메모</label>
-                    <input
-                      className="uiInput"
-                      value={editingMemo}
-                      onChange={(event) => setEditingMemo(event.target.value)}
-                    />
-                    <div className="librarySentenceEditActions">
-                      <button
-                        type="button"
-                        className="libraryAudioButton"
-                        onClick={() => handleSaveSentenceEdit(sentence.sentenceId)}
-                        disabled={savingEdit}
-                      >
-                        {savingEdit ? '저장 중...' : '저장'}
-                      </button>
-                      <button
-                        type="button"
-                        className="libraryAudioButton"
-                        onClick={cancelEditingSentence}
-                        disabled={savingEdit}
-                      >
-                        취소
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="librarySentenceFront" dir="auto">
-                      {sentence.frontText}
-                    </p>
-                    <p className="librarySentenceBack" dir="auto">
-                      {sentence.backText}
-                    </p>
-                    {sentence.memo ? <p className="librarySentenceMemo">메모: {sentence.memo}</p> : null}
-                  </>
-                )}
-                <div className="librarySentenceAudioRow">
-                  {audioStateBySentenceId[sentence.sentenceId]?.status === 'loading' ? (
-                    <button type="button" className="libraryAudioButton" disabled>
-                      생성 중...
-                    </button>
-                  ) : audioStateBySentenceId[sentence.sentenceId]?.status === 'done' ? (
-                    <>
-                      <span className="libraryAudioDone" aria-label="오디오 생성 완료">
-                        ✓
-                      </span>
-                      <button
-                        type="button"
-                        className="libraryAudioButton"
-                        onClick={() => handlePlayAudio(sentence.sentenceId)}
-                      >
-                        재생
-                      </button>
-                      {modifiedSentenceMap[sentence.sentenceId] ? (
-                        <button
-                          type="button"
-                          className="libraryAudioButton"
-                          onClick={() => handleGenerateAudio(sentence.sentenceId)}
-                        >
-                          다시 생성
-                        </button>
-                      ) : null}
-                    </>
-                  ) : (
+            <ul className="librarySetQuizletList">
+              {sentences.map((sentence) => (
+                <li key={sentence.sentenceId} className="librarySetQuizletCard">
+                  <div className="librarySetQuizletToolbar">
                     <button
                       type="button"
-                      className="libraryAudioButton"
-                      onClick={() => handleGenerateAudio(sentence.sentenceId)}
+                      className={`librarySetQuizletIconBtn${starredIds.has(sentence.sentenceId) ? ' isStarred' : ''}`}
+                      onClick={() => toggleStar(sentence.sentenceId)}
+                      aria-label={starredIds.has(sentence.sentenceId) ? '표시 해제' : '표시하기'}
+                      aria-pressed={starredIds.has(sentence.sentenceId)}
                     >
-                      {modifiedSentenceMap[sentence.sentenceId]
-                        ? '다시 생성'
-                        : audioStateBySentenceId[sentence.sentenceId]?.status === 'error'
-                          ? '다시 생성'
-                          : '음성 생성'}
+                      <StarIcon filled={starredIds.has(sentence.sentenceId)} />
                     </button>
+                    <button
+                      type="button"
+                      className="librarySetQuizletIconBtn"
+                      onClick={() => handleAudioIconClick(sentence.sentenceId)}
+                      disabled={audioStateBySentenceId[sentence.sentenceId]?.status === 'loading'}
+                      aria-label={
+                        audioStateBySentenceId[sentence.sentenceId]?.status === 'done'
+                          ? '음성 재생'
+                          : '음성 생성'
+                      }
+                    >
+                      <SpeakerIcon />
+                    </button>
+                    <button
+                      type="button"
+                      className="librarySetQuizletIconBtn"
+                      onClick={() => startEditingSentence(sentence)}
+                      disabled={savingEdit || editingSentenceId === sentence.sentenceId}
+                      aria-label="문장 수정"
+                    >
+                      <PencilIcon />
+                    </button>
+                  </div>
+
+                  {editingSentenceId === sentence.sentenceId ? (
+                    <div className="librarySetQuizletEditBlock">
+                      <div className="librarySetQuizletEditGrid">
+                        <div className="librarySetQuizletEditCol">
+                          <label className="librarySetQuizletEditLabel" htmlFor={`ed-ko-${sentence.sentenceId}`}>
+                            문장 (한국어)
+                          </label>
+                          <textarea
+                            id={`ed-ko-${sentence.sentenceId}`}
+                            className="uiInput libraryTextarea librarySetQuizletEditArea"
+                            rows={3}
+                            value={editingFrontText}
+                            onChange={(e) => setEditingFrontText(e.target.value)}
+                            dir="ltr"
+                          />
+                        </div>
+                        <div className="librarySetQuizletEditCol">
+                          <label className="librarySetQuizletEditLabel" htmlFor={`ed-ar-${sentence.sentenceId}`}>
+                            뜻 (아랍어)
+                          </label>
+                          <textarea
+                            id={`ed-ar-${sentence.sentenceId}`}
+                            className="uiInput libraryTextarea librarySetQuizletEditArea"
+                            rows={3}
+                            value={editingBackText}
+                            onChange={(e) => setEditingBackText(e.target.value)}
+                            dir="rtl"
+                          />
+                        </div>
+                      </div>
+                      <label className="librarySetQuizletEditLabel" htmlFor={`ed-m-${sentence.sentenceId}`}>
+                        메모 (선택)
+                      </label>
+                      <input
+                        id={`ed-m-${sentence.sentenceId}`}
+                        className="uiInput"
+                        value={editingMemo}
+                        onChange={(e) => setEditingMemo(e.target.value)}
+                      />
+                      <div className="librarySetQuizletEditActions">
+                        <button
+                          type="button"
+                          className="primaryButton"
+                          onClick={() => void handleSaveSentenceEdit(sentence.sentenceId)}
+                          disabled={savingEdit}
+                        >
+                          {savingEdit ? '저장 중…' : '저장'}
+                        </button>
+                        <button
+                          type="button"
+                          className="headerGhostButton"
+                          onClick={cancelEditingSentence}
+                          disabled={savingEdit}
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="librarySetQuizletCardBody">
+                        <div className="librarySetQuizletCol librarySetQuizletCol--ko">
+                          <p className="librarySetQuizletText librarySetQuizletText--ko" dir="ltr">
+                            {sentence.frontText}
+                          </p>
+                        </div>
+                        <div className="librarySetQuizletDivider" aria-hidden="true" />
+                        <div className="librarySetQuizletCol librarySetQuizletCol--ar">
+                          <p className="librarySetQuizletText librarySetQuizletText--ar" dir="rtl">
+                            {sentence.backText}
+                          </p>
+                        </div>
+                      </div>
+                      {sentence.memo ? (
+                        <p className="librarySetQuizletMemo" dir="auto">
+                          메모: {sentence.memo}
+                        </p>
+                      ) : null}
+                      <div className="librarySetQuizletAudioHint">
+                        {audioStateBySentenceId[sentence.sentenceId]?.status === 'loading' ? (
+                          <span className="librarySetQuizletAudioHintText">음성 생성 중…</span>
+                        ) : audioStateBySentenceId[sentence.sentenceId]?.status === 'done' ? (
+                          <span className="librarySetQuizletAudioHintText"></span>
+                        ) : (
+                          <span className="librarySetQuizletAudioHintText"></span>
+                        )}
+                      </div>
+                    </>
                   )}
-                </div>
-              </li>
-            ))}
-          </ul>
-            )}
-          </>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
-      {deleteTargetSentence ? (
-        <div
-          className="libraryModalOverlay"
-          role="presentation"
-          onClick={() => !deletingSentence && setDeleteTargetSentence(null)}
-        >
-          <div
-            className="libraryModal libraryDeleteModal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="sentence-delete-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 id="sentence-delete-title" className="libraryModalTitle">
-              문장을 삭제할까요?
-            </h3>
-            <p className="libraryDeleteModalText">삭제한 문장은 복구할 수 없습니다.</p>
-            <p className="libraryDeleteModalPreview" dir="auto">
-              {deleteTargetSentence.frontText}
-            </p>
-            <div className="libraryModalActions">
-              <button
-                type="button"
-                className="libraryDangerButton"
-                onClick={handleDeleteSentence}
-                disabled={deletingSentence}
-              >
-                {deletingSentence ? '삭제 중...' : '삭제'}
-              </button>
-              <button
-                type="button"
-                className="headerGhostButton"
-                onClick={() => !deletingSentence && setDeleteTargetSentence(null)}
-                disabled={deletingSentence}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </section>
   )
 }

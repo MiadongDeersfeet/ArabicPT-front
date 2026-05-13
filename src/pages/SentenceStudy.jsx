@@ -1,12 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
 import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
+import StudyMarkBar from '../components/ui/StudyMarkBar.jsx'
 import { useParams, Link } from 'react-router-dom'
 import { getSentencesBySet } from '../api/sentenceApi.js'
 import { getSentenceAudio } from '../api/audioApi.js'
 import { resumeCountdownAudio } from '../utils/countdownAudio.js'
 import { useSentenceCountdown } from '../hooks/useSentenceCountdown.js'
 import { useLongPressAdjust } from '../hooks/useLongPressAdjust.js'
+import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
+import {
+  loadMarks,
+  loadWeakOnly,
+  persistMarks,
+  persistWeakOnly,
+  pruneMarks,
+} from '../utils/sentenceStudyMarks.js'
 
 const AUTO_FLIP_SECONDS = 10
 const MIN_COUNTDOWN_SECONDS = 5
@@ -14,54 +23,6 @@ const MAX_COUNTDOWN_SECONDS = 20
 const LONG_PRESS_DELAY_MS = 350
 const LONG_PRESS_INTERVAL_MS = 170
 const LONG_PRESS_STEP_SECONDS = 5
-
-const CARD_SIDE_ORDER_STORAGE_KEY = 'arabicpt.sentenceStudy.cardSideOrder'
-
-function readCardSideReversed() {
-  try {
-    return localStorage.getItem(CARD_SIDE_ORDER_STORAGE_KEY) === 'reversed'
-  } catch {
-    return false
-  }
-}
-
-function persistCardSideReversed(reversed) {
-  try {
-    localStorage.setItem(CARD_SIDE_ORDER_STORAGE_KEY, reversed ? 'reversed' : 'default')
-  } catch {
-    /* ignore */
-  }
-}
-
-function resolveCardSides(sentence, reversed) {
-  if (!sentence) {
-    return { frontText: '', backText: '', frontDir: 'ltr', backDir: 'ltr' }
-  }
-  const isRtl = (lang) => typeof lang === 'string' && lang.toLowerCase().includes('ar')
-
-  const apiFront = {
-    text: sentence.frontText,
-    dir: isRtl(sentence.frontLang) ? 'rtl' : 'ltr',
-  }
-  const apiBack = {
-    text: sentence.backText,
-    dir: isRtl(sentence.backLang) ? 'rtl' : 'ltr',
-  }
-  if (!reversed) {
-    return {
-      frontText: apiFront.text,
-      backText: apiBack.text,
-      frontDir: apiFront.dir,
-      backDir: apiBack.dir,
-    }
-  }
-  return {
-    frontText: apiBack.text,
-    backText: apiFront.text,
-    frontDir: apiBack.dir,
-    backDir: apiFront.dir,
-  }
-}
 
 function SentenceStudy() {
   const { setId } = useParams()
@@ -75,8 +36,30 @@ function SentenceStudy() {
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
   const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
+  const [marks, setMarks] = useState({})
+  const [weakOnlyMode, setWeakOnlyMode] = useState(false)
   const previousIsFlippedRef = useRef(false)
-  const currentSentence = sentences[currentIndex]
+
+  const activeSentences = useMemo(() => {
+    if (sentences.length === 0) return []
+    if (!weakOnlyMode) return sentences
+    return sentences.filter((s) => marks[String(s.sentenceId)] === 'unknown')
+  }, [sentences, weakOnlyMode, marks])
+
+  const markStats = useMemo(() => {
+    let unknown = 0
+    let known = 0
+    for (const s of sentences) {
+      const m = marks[String(s.sentenceId)]
+      if (m === 'unknown') unknown += 1
+      else if (m === 'known') known += 1
+    }
+    const total = sentences.length
+    const unmarked = Math.max(0, total - unknown - known)
+    return { unknown, known, unmarked, total }
+  }, [sentences, marks])
+
+  const currentSentence = activeSentences[currentIndex] ?? null
   const cardSides = resolveCardSides(currentSentence, cardSideReversed)
 
   const toggleCardSideOrder = useCallback(() => {
@@ -121,6 +104,7 @@ function SentenceStudy() {
       }
       setLoading(true)
       setError(false)
+      setSentences([])
 
       try {
         const sentenceList = await getSentencesBySet(setIdNum)
@@ -156,16 +140,32 @@ function SentenceStudy() {
   }, [setAllowCountdown])
 
   useEffect(() => {
+    if (!setIdValid) return
+    setWeakOnlyMode(loadWeakOnly(setIdNum))
+  }, [setIdNum, setIdValid])
+
+  useEffect(() => {
+    if (!setIdValid) return
+    if (sentences.length === 0) {
+      setMarks({})
+      return
+    }
+    const ids = sentences.map((s) => s.sentenceId)
+    setMarks(pruneMarks(loadMarks(setIdNum), ids))
+  }, [setIdNum, setIdValid, sentences])
+
+  useEffect(() => {
     setCurrentIndex(0)
     setIsFlipped(false)
   }, [setIdNum, setIdValid])
 
   useEffect(() => {
-    if (currentIndex >= sentences.length && sentences.length > 0) {
-      setCurrentIndex(0)
+    if (activeSentences.length === 0) return
+    if (currentIndex >= activeSentences.length) {
+      setCurrentIndex(Math.max(0, activeSentences.length - 1))
       setIsFlipped(false)
     }
-  }, [currentIndex, sentences.length])
+  }, [currentIndex, activeSentences.length])
 
   useEffect(() => {
     if (sentences.length === 0) {
@@ -197,17 +197,72 @@ function SentenceStudy() {
     }
   }, [sentences])
 
+  /*
   const goPrev = () => {
-    if (sentences.length === 0) return
+    if (activeSentences.length === 0) return
     setIsFlipped(false)
-    setCurrentIndex((prev) => (prev === 0 ? sentences.length - 1 : prev - 1))
+    setCurrentIndex((prev) => (prev === 0 ? activeSentences.length - 1 : prev - 1))
   }
 
   const goNext = () => {
-    if (sentences.length === 0) return
+    if (activeSentences.length === 0) return
     setIsFlipped(false)
-    setCurrentIndex((prev) => (prev === sentences.length - 1 ? 0 : prev + 1))
+    setCurrentIndex((prev) => (prev === activeSentences.length - 1 ? 0 : prev + 1))
   }
+  */
+
+  const handleWeakOnlyChange = useCallback(
+    (event) => {
+      const next = event.target.checked
+      setWeakOnlyMode(next)
+      persistWeakOnly(setIdNum, next)
+      setCurrentIndex(0)
+      setIsFlipped(false)
+    },
+    [setIdNum],
+  )
+
+  const handleMark = useCallback(
+    (kind) => {
+      if (loading || error) return
+      const deck = activeSentences
+      const s = deck[currentIndex]
+      if (!s) return
+      const id = String(s.sentenceId)
+      const nextMarks = pruneMarks({ ...marks, [id]: kind }, sentences.map((x) => x.sentenceId))
+      setMarks(nextMarks)
+      persistMarks(setIdNum, nextMarks)
+
+      const nextActive = weakOnlyMode
+        ? sentences.filter((x) => nextMarks[String(x.sentenceId)] === 'unknown')
+        : sentences
+
+      setIsFlipped(false)
+
+      if (nextActive.length === 0) {
+        setCurrentIndex(0)
+        return
+      }
+
+      let nextIdx
+      if (weakOnlyMode && kind === 'known') {
+        nextIdx = Math.min(currentIndex, nextActive.length - 1)
+      } else {
+        nextIdx = (currentIndex + 1) % nextActive.length
+      }
+      setCurrentIndex(nextIdx)
+    },
+    [
+      loading,
+      error,
+      activeSentences,
+      currentIndex,
+      marks,
+      sentences,
+      weakOnlyMode,
+      setIdNum,
+    ],
+  )
 
   const flipCard = useCallback(() => {
     setIsFlipped((prev) => {
@@ -296,67 +351,101 @@ function SentenceStudy() {
   return (
     <section className="container">
       <div className="studyPageIntro">
-        <div className="studyPageIntroHeadingRow">
-          <div>
-            <h2>문장 학습</h2>
-            <p>
-              {sentences.length === 0 ? 0 : currentIndex + 1} / {sentences.length} 문장
-            </p>
-            <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
-              ← 문장 세트로
-            </Link>
-          </div>
-          <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
-        </div>
-        <div className="countdownControlPanel">
-          <label className="countToggle" aria-label="Count ON/OFF">
-            <span className="countToggleLabel">Count</span>
-            <input type="checkbox" checked={countdownEnabled} onChange={handleCountdownToggle} />
-            <span className="countToggleTrack" aria-hidden="true">
-              <span className="countToggleThumb" />
-              <span className="countToggleState">{countdownEnabled ? 'ON' : 'OFF'}</span>
-            </span>
-          </label>
-          {countdownEnabled ? (
-            <div className="countStepper" aria-label="카운트다운 시간 설정">
-              <button
-                type="button"
-                className="countStepperButton"
-                onClick={() => handleStepButtonClick(-1)}
-                onPointerDown={(event) => startLongPressAdjust(-1, event)}
-                onPointerUp={stopLongPressAdjust}
-                onPointerLeave={stopLongPressAdjust}
-                onPointerCancel={stopLongPressAdjust}
-                disabled={isCountdownRunning || countdownSeconds <= MIN_COUNTDOWN_SECONDS}
-                aria-label="카운트다운 시간 1초 감소"
-              >
-                -
-              </button>
-              <input
-                type="number"
-                min={MIN_COUNTDOWN_SECONDS}
-                max={MAX_COUNTDOWN_SECONDS}
-                className="countStepperValue"
-                value={countdownSeconds}
-                onChange={handleCountdownSecondsChange}
-                aria-label="카운트다운 시간(초)"
-              />
-              <button
-                type="button"
-                className="countStepperButton"
-                onClick={() => handleStepButtonClick(1)}
-                onPointerDown={(event) => startLongPressAdjust(1, event)}
-                onPointerUp={stopLongPressAdjust}
-                onPointerLeave={stopLongPressAdjust}
-                onPointerCancel={stopLongPressAdjust}
-                disabled={isCountdownRunning || countdownSeconds >= MAX_COUNTDOWN_SECONDS}
-                aria-label="카운트다운 시간 1초 증가"
-              >
-                +
-              </button>
+        <div className="studyPageIntroTopRow">
+          <div className="studyPageIntroHeadingRow">
+            <div>
+              <h2>문장 학습</h2>
+              <p className="studyDeckPosition">
+                {activeSentences.length === 0
+                  ? weakOnlyMode
+                    ? '모름 카드 0장'
+                    : `${sentences.length === 0 ? 0 : currentIndex + 1} / ${sentences.length} 문장`
+                  : `${currentIndex + 1} / ${activeSentences.length}장 · ${weakOnlyMode ? '모름만 복습' : '전체'}`}
+              </p>
+              <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
+                ← 문장 세트로
+              </Link>
             </div>
-          ) : null}
+            <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
+          </div>
+          <div className="countdownControlPanel">
+            <label className="countToggle" aria-label="Count ON/OFF">
+              <span className="countToggleLabel">Count</span>
+              <input type="checkbox" checked={countdownEnabled} onChange={handleCountdownToggle} />
+              <span className="countToggleTrack" aria-hidden="true">
+                <span className="countToggleThumb" />
+                <span className="countToggleState">{countdownEnabled ? 'ON' : 'OFF'}</span>
+              </span>
+            </label>
+            {countdownEnabled ? (
+              <div className="countStepper" aria-label="카운트다운 시간 설정">
+                <button
+                  type="button"
+                  className="countStepperButton"
+                  onClick={() => handleStepButtonClick(-1)}
+                  onPointerDown={(event) => startLongPressAdjust(-1, event)}
+                  onPointerUp={stopLongPressAdjust}
+                  onPointerLeave={stopLongPressAdjust}
+                  onPointerCancel={stopLongPressAdjust}
+                  disabled={isCountdownRunning || countdownSeconds <= MIN_COUNTDOWN_SECONDS}
+                  aria-label="카운트다운 시간 1초 감소"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min={MIN_COUNTDOWN_SECONDS}
+                  max={MAX_COUNTDOWN_SECONDS}
+                  className="countStepperValue"
+                  value={countdownSeconds}
+                  onChange={handleCountdownSecondsChange}
+                  aria-label="카운트다운 시간(초)"
+                />
+                <button
+                  type="button"
+                  className="countStepperButton"
+                  onClick={() => handleStepButtonClick(1)}
+                  onPointerDown={(event) => startLongPressAdjust(1, event)}
+                  onPointerUp={stopLongPressAdjust}
+                  onPointerLeave={stopLongPressAdjust}
+                  onPointerCancel={stopLongPressAdjust}
+                  disabled={isCountdownRunning || countdownSeconds >= MAX_COUNTDOWN_SECONDS}
+                  aria-label="카운트다운 시간 1초 증가"
+                >
+                  +
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
+        {!loading && !error && sentences.length > 0 ? (
+          <div className="studyDeckMetaRow">
+            <div className="studyMarkStats" role="status" aria-live="polite">
+              <span className="studyMarkStat studyMarkStat--total">전체 {markStats.total}</span>
+              <span className="studyMarkStatSep" aria-hidden="true">
+                ·
+              </span>
+              <span className="studyMarkStat studyMarkStat--unknown">모름 {markStats.unknown}</span>
+              <span className="studyMarkStatSep" aria-hidden="true">
+                ·
+              </span>
+              <span className="studyMarkStat studyMarkStat--known">알고 있음 {markStats.known}</span>
+              <span className="studyMarkStatSep" aria-hidden="true">
+                ·
+              </span>
+              <span className="studyMarkStat studyMarkStat--neutral">미표시 {markStats.unmarked}</span>
+            </div>
+            <label className="studyWeakOnlyToggle">
+              <input
+                type="checkbox"
+                checked={weakOnlyMode}
+                onChange={handleWeakOnlyChange}
+                disabled={loading}
+              />
+              <span>모름만 복습</span>
+            </label>
+          </div>
+        ) : null}
       </div>
 
       {countdownEnabled ? (
@@ -390,11 +479,32 @@ function SentenceStudy() {
           progress="문장 없음"
           text="아직 등록된 문장이 없습니다."
         />
+      ) : activeSentences.length === 0 ? (
+        <div className="studyWeakEmptyWrap">
+          <SentenceBox
+            title="문장 학습 카드"
+            status="복습"
+            progress="모름 0장"
+            text="모름(×)으로 표시된 카드가 없습니다. 어려운 문장에서 ×를 누르거나, 전체 학습으로 돌아가 주세요."
+          />
+          <button
+            type="button"
+            className="headerGhostButton studyWeakEmptyBackBtn"
+            onClick={() => {
+              setWeakOnlyMode(false)
+              persistWeakOnly(setIdNum, false)
+              setCurrentIndex(0)
+              setIsFlipped(false)
+            }}
+          >
+            전체 문장 학습으로
+          </button>
+        </div>
       ) : (
         <SentenceBox
           title="문장 학습 카드"
           status="학습 중"
-          progress={`문장 ${currentIndex + 1}`}
+          progress={`문장 ${currentIndex + 1} / ${activeSentences.length}`}
           frontText={cardSides.frontText}
           backText={cardSides.backText}
           frontDir={cardSides.frontDir}
@@ -406,14 +516,30 @@ function SentenceStudy() {
         />
       )}
 
+      {!loading && !error && sentences.length > 0 && activeSentences.length > 0 ? (
+        <StudyMarkBar onWrong={() => handleMark('unknown')} onCorrect={() => handleMark('known')} />
+      ) : null}
+
+      {/* 이전/다음 문장 — O/X(모름·알고 있음)로만 이동하도록 비표시
       <div className="studyActionRow">
-        <button type="button" className="headerGhostButton" onClick={goPrev} disabled={loading || sentences.length === 0}>
+        <button
+          type="button"
+          className="headerGhostButton"
+          onClick={goPrev}
+          disabled={loading || activeSentences.length === 0}
+        >
           이전 문장
         </button>
-        <button type="button" className="headerPrimaryButton" onClick={goNext} disabled={loading || sentences.length === 0}>
+        <button
+          type="button"
+          className="headerPrimaryButton"
+          onClick={goNext}
+          disabled={loading || activeSentences.length === 0}
+        >
           다음 문장
         </button>
       </div>
+      */}
     </section>
   )
 }

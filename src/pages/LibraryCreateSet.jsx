@@ -1,53 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { CreateSetCardsForm } from '../components/CreateSetCardsForm.jsx'
 import { getFolders } from '../api/folderApi.js'
 import { createSet } from '../api/sentenceSetApi.js'
 import { createSentence } from '../api/sentenceApi.js'
-
-const FRONT_LANG = 'ko'
-const BACK_LANG = 'ar'
-
-function makeCardId() {
-  return `card-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
-}
-
-function emptyCard() {
-  return { id: makeCardId(), frontText: '', backText: '', memo: '', memoOpen: false }
-}
+import { BACK_LANG, emptyCard, FRONT_LANG, validateSentenceCards } from '../lib/sentenceCardDraft.js'
 
 function validateForm(title, cards) {
   const t = title.trim()
   if (!t) {
     return { ok: false, message: '세트 제목을 입력해 주세요.' }
   }
-
-  const partialLines = []
-  const valid = []
-
-  cards.forEach((card, index) => {
-    const front = card.frontText.trim()
-    const back = card.backText.trim()
-    const empty = !front && !back
-    if (empty) return
-    if (!front || !back) {
-      partialLines.push(index + 1)
-    } else {
-      valid.push({ front, back, memo: (card.memo ?? '').trim() })
-    }
-  })
-
-  if (partialLines.length > 0) {
-    return {
-      ok: false,
-      message: `카드 ${partialLines.join(', ')}번: 앞면과 뒷면 문장을 모두 입력해 주세요.`,
-    }
+  const cardResult = validateSentenceCards(cards)
+  if (!cardResult.ok) {
+    return { ok: false, message: cardResult.message }
   }
-
-  if (valid.length === 0) {
-    return { ok: false, message: '앞면과 뒷면이 모두 입력된 문장 카드를 최소 1개 추가해 주세요.' }
-  }
-
-  return { ok: true, title: t, validCards: valid }
+  return { ok: true, title: t, validCards: cardResult.validCards }
 }
 
 function LibraryCreateSet() {
@@ -247,100 +215,18 @@ function LibraryCreateSet() {
         </div>
       </div>
 
-      <div className="createSetCardsSection">
-        <ul className="createSetCardList">
-          {cards.map((card, index) => (
-            <li key={card.id} className="createSetCard">
-              <div className="createSetCardToolbar">
-                <span className="createSetCardNumber">{index + 1}</span>
-                <button
-                  type="button"
-                  className="createSetCardRemove"
-                  onClick={() => removeCard(card.id)}
-                  disabled={cards.length <= 1 || saving}
-                  aria-label={`카드 ${index + 1} 삭제`}
-                >
-                  삭제
-                </button>
-              </div>
-              <div className="createSetCardFields">
-                <div className="uiField">
-                  <label className="uiFieldLabel">문장 <span className="libraryRequired">*</span></label>
-                  <textarea
-                    className="uiInput libraryTextarea"
-                    rows={1}
-                    value={card.frontText}
-                    onChange={(e) => updateCard(card.id, 'frontText', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-                <div className="uiField">
-                  <label className="uiFieldLabel">뜻 <span className="libraryRequired">*</span></label>
-                  <textarea
-                    className="uiInput libraryTextarea"
-                    rows={1}
-                    value={card.backText}
-                    onChange={(e) => updateCard(card.id, 'backText', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              {card.memoOpen ? (
-                <div className="uiField createSetCardMemoField">
-                  <label className="uiFieldLabel" htmlFor={`create-set-memo-${card.id}`}>
-                    메모 (선택)
-                  </label>
-                  <textarea
-                    id={`create-set-memo-${card.id}`}
-                    className="uiInput libraryTextarea"
-                    rows={1}
-                    value={card.memo}
-                    onChange={(e) => updateCard(card.id, 'memo', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-              ) : null}
-              <div className="createSetCardToggleRow">
-                <button
-                  type="button"
-                  className="createSetDescToggleBtn"
-                  onClick={() => toggleCardMemo(card.id)}
-                  aria-expanded={Boolean(card.memoOpen)}
-                  aria-controls={`create-set-memo-${card.id}`}
-                  disabled={saving}
-                >
-                  {card.memoOpen ? '- 메모' : '+ 메모'}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <button type="button" className="headerGhostButton createSetAddCardBtn" onClick={addCard} disabled={saving}>
-          + 카드 추가
-        </button>
-      </div>
-
-      {submitError ? (
-        <p className="libraryFormError createSetError" role="alert">
-          {submitError}
-        </p>
-      ) : null}
-
-      <div className="createSetActions createSetSimpleActions">
-        <button
-          type="button"
-          className="createSetFabAdd"
-          onClick={addCard}
-          disabled={saving}
-          aria-label="카드 추가"
-        >
-          +
-        </button>
-        <button type="button" className="primaryButton" onClick={handleMake} disabled={saving}>
-          {saving ? '저장 중…' : '완료'}
-        </button>
-      </div>
+      <CreateSetCardsForm
+        cards={cards}
+        onAddCard={addCard}
+        onRemoveCard={removeCard}
+        onUpdateCard={updateCard}
+        onToggleCardMemo={toggleCardMemo}
+        disabled={saving}
+        error={submitError}
+        primaryLabel={saving ? '저장 중…' : '완료'}
+        onPrimaryClick={handleMake}
+        showFab
+      />
     </section>
   )
 }

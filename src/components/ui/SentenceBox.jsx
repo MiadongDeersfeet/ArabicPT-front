@@ -11,7 +11,9 @@ function SentenceBox({
   isFlipped = false,
   onFlip,
   showAudioButton = false,
+  audioButtonDisabled = false,
   onAudioPlay,
+  className = '',
 }) {
   const canFlip = typeof onFlip === 'function'
   const resolvedFrontText = frontText ?? text
@@ -33,9 +35,18 @@ function SentenceBox({
     }
   }
 
+  const rootClass = [
+    'sentenceBox',
+    canFlip ? 'canFlip' : '',
+    isFlipped ? 'isFlipped' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <article
-      className={`sentenceBox${canFlip ? ' canFlip' : ''}${isFlipped ? ' isFlipped' : ''}`}
+      className={rootClass}
       aria-label={title}
       onClick={canFlip ? onFlip : undefined}
       onKeyDown={handleKeyDown}
@@ -54,6 +65,7 @@ function SentenceBox({
             <button
               type="button"
               className="sentenceAudioPlayButton"
+              disabled={audioButtonDisabled}
               onClick={handleAudioButtonClick}
               aria-label="문장 오디오 재생"
             >

@@ -11,6 +11,7 @@ import LibraryFolders from './pages/LibraryFolders.jsx'
 import LibraryFolderDetail from './pages/LibraryFolderDetail.jsx'
 import LibraryCreateSet from './pages/LibraryCreateSet.jsx'
 import LibrarySetDetail from './pages/LibrarySetDetail.jsx'
+import LibrarySetEdit from './pages/LibrarySetEdit.jsx'
 import SentenceStudy from './pages/SentenceStudy.jsx'
 import UiKit from './pages/UiKit.jsx'
 
@@ -65,6 +66,16 @@ function App() {
           <Layout>
             <RequireAuth>
               <LibraryCreateSet />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/sets/:setId/edit"
+        element={
+          <Layout>
+            <RequireAuth>
+              <LibrarySetEdit />
             </RequireAuth>
           </Layout>
         }

@@ -15,6 +15,12 @@ export const requestGoogleLogin = () => {
  */
 export const getMyInfo = () => axiosInstance.get('/api/members/me')
 
+/** ApiResponseDTO.data — name, profileImage, email 등 */
+export const fetchMyMemberProfile = async () => {
+  const response = await getMyInfo()
+  return response.data.data
+}
+
 /**
  * 로그아웃 요청
  * 서버 로그아웃 처리에 사용합니다.

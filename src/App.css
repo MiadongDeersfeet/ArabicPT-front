@@ -195,6 +195,11 @@ a.primaryButton {
   height: 16px;
 }
 
+.sentenceAudioPlayButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .sentenceBody {
   min-height: 230px;
   padding: 18px 16px 24px;
@@ -385,10 +390,113 @@ a.primaryButton {
 
 .studyPageIntro {
   display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 12px;
+}
+
+.studyPageIntroTopRow {
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
+}
+
+.studyDeckMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding: 10px 0 4px;
+  margin-top: 8px;
+  border-top: 1px solid #eef2f7;
+}
+
+.studyMarkStats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.studyMarkStatSep {
+  color: #cbd5e1;
+  margin: 0 5px;
+  font-weight: 500;
+}
+
+.studyMarkStat--total {
+  color: #475569;
+}
+
+.studyMarkStat--unknown {
+  color: #c2410c;
+}
+
+.studyMarkStat--known {
+  color: #047857;
+}
+
+.studyMarkStat--neutral {
+  color: #64748b;
+}
+
+.studyWeakOnlyToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.studyWeakOnlyToggle input {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: #059669;
+  cursor: pointer;
+}
+
+.studyWeakEmptyWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studyWeakEmptyBackBtn {
+  align-self: flex-start;
+}
+
+.studyMarkBar {
+  margin-top: 8px;
+}
+
+.studyMarkBar .studyCardFooter {
+  margin-top: 0;
+}
+
+.studyMarkBarCaptions {
+  display: grid;
+  grid-template-columns: 52px 52px;
+  column-gap: 12px;
+  justify-content: center;
+  width: max-content;
+  margin: 2px auto 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+}
+
+.studyDeckPosition {
+  margin: 0;
+  color: #6b7280;
 }
 
 .studyPageIntro h2 {
@@ -906,7 +1014,7 @@ a.primaryButton {
 }
 
 .librarySetViewPage {
-  max-width: 760px;
+  max-width: 880px;
 }
 
 .librarySetTopBar {
@@ -914,6 +1022,569 @@ a.primaryButton {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.librarySetTopActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.librarySetTopEditButton {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.librarySetDetailListHint {
+  margin: 0 0 14px;
+}
+
+.librarySetDetailEmptyCta {
+  text-align: center;
+  padding: 20px 16px;
+}
+
+.librarySetEditPage {
+  max-width: 860px;
+}
+
+.librarySetEditHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.librarySetEditBack {
+  align-self: flex-start;
+}
+
+.librarySetEditTitle {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.librarySetEditMetaCard.introCard {
+  padding: 12px 14px;
+}
+
+.librarySetEditMetaCard {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.librarySetEditMetaField {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0;
+  align-items: baseline;
+}
+
+.librarySetEditMetaField--stack {
+  align-items: start;
+}
+
+.librarySetEditMetaField--stack .librarySetEditFieldLabel {
+  padding-top: 7px;
+}
+
+.librarySetEditMetaDescArea {
+  min-height: 44px;
+}
+
+.librarySetEditFieldLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.librarySetEditUnderlineInput,
+.librarySetEditUnderlineArea {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #d4d8e6;
+  border-radius: 0;
+  padding: 4px 0 6px;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.librarySetEditUnderlineInput:focus,
+.librarySetEditUnderlineArea:focus {
+  outline: none;
+  border-bottom-color: #0f766e;
+}
+
+.librarySetEditUnderlineArea {
+  resize: vertical;
+  min-height: 44px;
+  line-height: 1.4;
+}
+
+.librarySetEditHint {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.librarySetEditCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.librarySetEditCard {
+  background: #ffffff;
+  border: 1px solid #e8e8ec;
+  border-radius: 10px;
+  padding: 10px 12px 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.librarySetEditCardTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.librarySetEditCardIndex {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #94a3b8;
+  min-width: 1.5rem;
+}
+
+.librarySetEditCardDrag {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: #cbd5e1;
+  user-select: none;
+}
+
+.librarySetEditIconBtn {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.librarySetEditIconBtn:hover {
+  background: #f1f5f9;
+  color: #b91c1c;
+}
+
+.librarySetEditIconBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.librarySetEditTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+@media (max-width: 640px) {
+  .librarySetEditTwoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+.librarySetEditCol {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  column-gap: 6px;
+  row-gap: 1px;
+  align-items: start;
+}
+
+.librarySetEditCol > .librarySetEditFieldLabel {
+  grid-column: 1;
+  grid-row: 1;
+  padding-top: 2px;
+  align-self: start;
+}
+
+.librarySetEditCol > .librarySetEditTermArea {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  padding-top: 1px;
+  padding-bottom: 4px;
+  min-height: 0;
+  line-height: 1.35;
+}
+
+@supports (field-sizing: content) {
+  .librarySetEditCol > .librarySetEditTermArea {
+    field-sizing: content;
+    min-block-size: calc(1.35lh + 6px);
+  }
+}
+
+@supports not (field-sizing: content) {
+  .librarySetEditCol > .librarySetEditTermArea {
+    min-block-size: calc(1.35rem * 1.35 + 6px);
+  }
+}
+
+.librarySetEditCol > .librarySetEditLangHint {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+}
+
+.librarySetEditLangHint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.librarySetEditMemoBlock {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+}
+
+.librarySetEditMemoBlock .librarySetEditFieldLabel {
+  padding-top: 2px;
+}
+
+.librarySetEditMemoArea {
+  min-height: 0;
+  padding-top: 1px;
+  padding-bottom: 4px;
+  line-height: 1.35;
+}
+
+@supports (field-sizing: content) {
+  .librarySetEditMemoArea {
+    field-sizing: content;
+    min-block-size: calc(1.35lh + 6px);
+  }
+}
+
+@supports not (field-sizing: content) {
+  .librarySetEditMemoArea {
+    min-block-size: calc(1.35rem * 1.35 + 6px);
+  }
+}
+
+.librarySetEditMemoToggleRow {
+  margin-top: 4px;
+}
+
+.librarySetEditAudioRow {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.librarySetEditStickyActions {
+  position: sticky;
+  bottom: 12px;
+  z-index: 12;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+/* —— 세트 상세: 퀴즐렛형 카드 리스트 —— */
+.librarySetQuizletPanel {
+  background: #f5f6fb;
+  border-radius: 16px;
+  padding: 18px 14px 20px;
+  margin-top: 4px;
+}
+
+.librarySetQuizletPanelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.librarySetQuizletPanelTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ea580c;
+  letter-spacing: -0.02em;
+}
+
+.librarySetQuizletPanelSubtitle {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
+.librarySetQuizletPanelMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.librarySetQuizletStarCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.librarySetQuizletStarCount .librarySetQuizletIconSvg {
+  color: #94a3b8;
+}
+
+.librarySetQuizletStarCountNum {
+  color: #334155;
+}
+
+.librarySetQuizletEditAllLink {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.librarySetQuizletList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.librarySetQuizletCard {
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e4e7ee;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  padding: 20px 18px 16px;
+  min-height: 5rem;
+}
+
+.librarySetQuizletToolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  z-index: 2;
+}
+
+.librarySetQuizletIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.librarySetQuizletIconBtn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.librarySetQuizletIconBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.librarySetQuizletIconBtn.isStarred {
+  color: #ea580c;
+}
+
+.librarySetQuizletIconSvg {
+  display: block;
+}
+
+.librarySetQuizletCardBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  padding-right: 100px;
+  padding-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .librarySetQuizletCardBody {
+    grid-template-columns: 1fr;
+    padding-right: 0;
+    padding-top: 40px;
+  }
+
+  .librarySetQuizletDivider {
+    display: none;
+  }
+
+  .librarySetQuizletCol--ar {
+    border-top: 1px solid #eef1f6;
+    padding-top: 14px;
+    margin-top: 4px;
+  }
+}
+
+.librarySetQuizletCol {
+  min-width: 0;
+  padding: 4px 8px 8px;
+}
+
+.librarySetQuizletCol--ko {
+  text-align: left;
+}
+
+.librarySetQuizletCol--ar {
+  text-align: right;
+}
+
+.librarySetQuizletDivider {
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, #dde1ea 12%, #dde1ea 88%, transparent 100%);
+  margin: 0 6px;
+  align-self: stretch;
+}
+
+.librarySetQuizletText {
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #0f172a;
+}
+
+.librarySetQuizletText--ko {
+  font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  font-size: clamp(1.08rem, 2.6vw, 1.42rem);
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: -0.02em;
+}
+
+.librarySetQuizletText--ar {
+  font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Amiri', 'Traditional Arabic', serif;
+  font-size: clamp(1.22rem, 3.1vw, 1.65rem);
+  font-weight: 500;
+  line-height: 1.95;
+  letter-spacing: 0.01em;
+  font-feature-settings: 'kern' 1;
+}
+
+.librarySetQuizletMemo {
+  margin: 12px 4px 0;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.librarySetQuizletAudioHint {
+  margin: 8px 4px 0;
+}
+
+.librarySetQuizletAudioHintText {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.librarySetQuizletEditBlock {
+  padding: 8px 4px 0;
+  padding-right: 100px;
+}
+
+@media (max-width: 640px) {
+  .librarySetQuizletEditBlock {
+    padding-right: 0;
+  }
+}
+
+.librarySetQuizletEditGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .librarySetQuizletEditGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.librarySetQuizletEditCol {
+  min-width: 0;
+}
+
+.librarySetQuizletEditLabel {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.librarySetQuizletEditArea {
+  font-size: 1rem;
+}
+
+.librarySetQuizletEditActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .librarySetTopLink {
@@ -928,6 +1599,77 @@ a.primaryButton {
 
 .librarySetSlideSection {
   margin-top: 14px;
+}
+
+.librarySetPreviewSection {
+  margin-top: 14px;
+}
+
+.librarySetPreviewHeadingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.librarySetPreviewHeading {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.librarySetPreviewSentenceWrap {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.librarySetPreviewActionRow {
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox {
+  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.08);
+}
+
+.librarySetPreviewSentenceWrap .sentenceBody {
+  min-height: 300px;
+  padding: 28px 22px 32px;
+}
+
+.librarySetPreviewSentenceWrap .sentenceFlipScene,
+.librarySetPreviewSentenceWrap .sentenceFlipInner {
+  min-height: 248px;
+}
+
+.librarySetPreviewSentenceWrap .sentenceText {
+  font-size: clamp(1.65rem, 5.4vw, 2.75rem);
+  line-height: 1.7;
+}
+
+.librarySetPreviewSentenceWrap .sentenceHeader {
+  padding: 16px 20px;
+}
+
+.librarySetPreviewSentenceWrap .sentenceBottomBar {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+}
+
+.librarySetPreviewSentenceWrap .sentenceAudioPlayButton {
+  width: 40px;
+  height: 40px;
+}
+
+.librarySetPreviewSentenceWrap .sentenceAudioPlayButton svg {
+  width: 18px;
+  height: 18px;
 }
 
 .librarySetSlideWrap {
@@ -1009,6 +1751,13 @@ a.primaryButton {
   border-radius: 50%;
   background: #e0f2fe;
   font-size: 1rem;
+}
+
+.librarySetAuthorAvatar--photo {
+  object-fit: cover;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid #bae6fd;
 }
 
 .librarySetAuthorName,
@@ -1633,13 +2382,23 @@ a.primaryButton {
 
 @media (max-width: 520px) {
   .studyPageIntro {
-    align-items: center;
+    align-items: stretch;
     gap: 8px;
+  }
+
+  .studyPageIntroTopRow {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .countdownControlPanel {
     align-items: flex-end;
     gap: 6px;
+  }
+
+  .studyDeckMetaRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .studyPageIntro h2 {

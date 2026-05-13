@@ -6,7 +6,7 @@ function Footer() {
       <div className="container siteFooterInner">
         <div>
           <strong>ArabicPT</strong>
-          <p>아나 누르 윤기맨</p>
+          <p>"ليس اسم آخر قد أعطي بين الناس به ينبغي أن نخلص"</p>
         </div>
 
         <div className="siteFooterLinks">
