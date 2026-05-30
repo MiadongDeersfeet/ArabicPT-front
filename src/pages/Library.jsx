@@ -47,6 +47,14 @@ function Library() {
     <section className="container sectionSpacing">
       <div className="introCard" role="region" aria-label="라이브러리">
         <h2>내 라이브러리</h2>
+        <div className="libraryModeTabs" role="tablist" aria-label="학습 유형">
+          <span className="libraryModeTab libraryModeTab--active" aria-current="page">
+            문장 카드 학습
+          </span>
+          <Link to="/library/paragraph-sets" className="libraryModeTab">
+            문단 Ebook 학습
+          </Link>
+        </div>
       </div>
 
       <div className="introCard libraryCreateSection">

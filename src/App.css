@@ -2465,3 +2465,347 @@ a.primaryButton {
     font-size: 1.05rem;
   }
 }
+
+/* --- Paragraph Ebook --- */
+
+.libraryModeTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.libraryModeTab {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #99f6e4;
+  background: #ffffff;
+  color: #115e59;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.libraryModeTab--active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}
+
+.paragraphLibraryHint {
+  margin: 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.paragraphSetCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.paragraphSetCardDesc {
+  margin: 0;
+  line-height: 1.45;
+  color: #374151;
+}
+
+.paragraphSetCardActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.paragraphSetCardBtn {
+  min-height: 44px;
+  text-align: center;
+  justify-content: center;
+}
+
+.paragraphFolderFilter {
+  margin-top: 12px;
+}
+
+.paragraphTextarea {
+  min-height: 120px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.paragraphTextarea--ko {
+  text-align: left;
+}
+
+.paragraphTextarea--ar {
+  text-align: right;
+  line-height: 1.85;
+}
+
+.paragraphCreateActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .paragraphCreateActions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.paragraphCreateSecondaryBtn {
+  width: 100%;
+}
+
+.paragraphSetDetailPage .librarySetTopBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.paragraphSetDetailTitle {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.paragraphDetailList {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.paragraphDetailItemHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.paragraphDetailPageNum {
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.paragraphDetailAudioActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.paragraphAudioError {
+  color: #b91c1c;
+  font-size: 0.8125rem;
+}
+
+.paragraphDetailPreview {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .paragraphDetailPreview {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.paragraphDetailPreviewCol p {
+  margin: 4px 0 0;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.paragraphDetailPreviewLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.paragraphDetailPreviewCol--ar p {
+  text-align: right;
+  line-height: 1.75;
+}
+
+.paragraphDetailMemo {
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.librarySetDeleteBtn {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.paragraphEditTwoCol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .paragraphEditTwoCol {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Paragraph Reader (Ebook) */
+
+.paragraphReaderPage {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 120px);
+  max-width: min(100% - 32px, 720px);
+  margin: 0 auto;
+  padding: 12px 0 24px;
+}
+
+.paragraphReaderHeader {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.paragraphReaderBack {
+  font-size: 0.875rem;
+}
+
+.paragraphReaderTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.paragraphReaderPageIndicator {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.paragraphReaderStatus {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.paragraphReaderPageCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.paragraphReaderSideHint {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.paragraphReaderBody {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: #111827;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  padding: 4px 2px 8px;
+  animation: paragraphReaderFade 0.22s ease;
+}
+
+.paragraphReaderBody--ar {
+  line-height: 1.9;
+  text-align: right;
+}
+
+.paragraphReaderBody--ko {
+  text-align: left;
+}
+
+@keyframes paragraphReaderFade {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.paragraphReaderFooter {
+  display: grid;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-shrink: 0;
+}
+
+.paragraphReaderNavBtn {
+  min-width: 56px;
+  min-height: 56px;
+  border: none;
+  border-radius: 14px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paragraphReaderNavBtn:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+}
+
+.paragraphReaderAudioBtn {
+  min-height: 56px;
+  border: none;
+  border-radius: 14px;
+  background: #e6fffb;
+  color: #115e59;
+  border: 1px solid #99f6e4;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.paragraphReaderAudioBtn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+

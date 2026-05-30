@@ -13,6 +13,11 @@ import LibraryCreateSet from './pages/LibraryCreateSet.jsx'
 import LibrarySetDetail from './pages/LibrarySetDetail.jsx'
 import LibrarySetEdit from './pages/LibrarySetEdit.jsx'
 import SentenceStudy from './pages/SentenceStudy.jsx'
+import ParagraphLibrary from './pages/ParagraphLibrary.jsx'
+import ParagraphSetCreate from './pages/ParagraphSetCreate.jsx'
+import ParagraphSetDetail from './pages/ParagraphSetDetail.jsx'
+import ParagraphSetEdit from './pages/ParagraphSetEdit.jsx'
+import ParagraphReader from './pages/ParagraphReader.jsx'
 import UiKit from './pages/UiKit.jsx'
 
 function App() {
@@ -96,6 +101,54 @@ function App() {
         element={
           <Layout>
             <SentenceStudy />
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/paragraph-sets"
+        element={
+          <Layout>
+            <RequireAuth>
+              <ParagraphLibrary />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/paragraph-sets/new"
+        element={
+          <Layout>
+            <RequireAuth>
+              <ParagraphSetCreate />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/paragraph-sets/:paragraphSetId/edit"
+        element={
+          <Layout>
+            <RequireAuth>
+              <ParagraphSetEdit />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/library/paragraph-sets/:paragraphSetId"
+        element={
+          <Layout>
+            <RequireAuth>
+              <ParagraphSetDetail />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/study/paragraph-sets/:paragraphSetId"
+        element={
+          <Layout>
+            <ParagraphReader />
           </Layout>
         }
       />
