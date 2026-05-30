@@ -363,6 +363,27 @@ a.primaryButton {
   line-height: 1.4;
 }
 
+.homeIntroCard {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.homeIntroCard h2 {
+  margin: 0 0 8px;
+}
+
+.homeIntroCard p {
+  margin: 0 0 20px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.homeLibraryButton {
+  display: inline-flex;
+  min-width: min(100%, 280px);
+  justify-content: center;
+}
+
 .learningCardLink {
   text-decoration: none;
   color: inherit;
@@ -2807,5 +2828,38 @@ a.primaryButton {
   background: #f3f4f6;
   color: #9ca3af;
   border-color: #e5e7eb;
+}
+
+/* Sentence study — Ebook mode (기존 문장 세트) */
+
+.studyEbookPage {
+  width: min(100% - 32px, 720px);
+}
+
+.studyEbookIntro {
+  margin-bottom: 12px;
+}
+
+.studyViewModeTabs {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.studyEbookPageCard {
+  flex: 1;
+  min-height: min(52vh, 420px);
+  max-height: min(62vh, 520px);
+}
+
+.studyEbookFooter {
+  margin-top: 12px;
+}
+
+.studyEbookPageIndicator {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
 }
 

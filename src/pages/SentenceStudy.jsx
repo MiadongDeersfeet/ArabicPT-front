@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
+import StudyEbookView from '../components/ui/StudyEbookView.jsx'
 import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
 import StudyMarkBar from '../components/ui/StudyMarkBar.jsx'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { getSentencesBySet } from '../api/sentenceApi.js'
 import { getSentenceAudio } from '../api/audioApi.js'
 import { resumeCountdownAudio } from '../utils/countdownAudio.js'
@@ -23,9 +24,22 @@ const MAX_COUNTDOWN_SECONDS = 20
 const LONG_PRESS_DELAY_MS = 350
 const LONG_PRESS_INTERVAL_MS = 170
 const LONG_PRESS_STEP_SECONDS = 5
+const VIEW_MODE_STORAGE_KEY = 'arabicpt.study.viewMode'
+
+function readInitialViewMode(searchParams) {
+  if (searchParams.get('mode') === 'ebook') return 'ebook'
+  try {
+    const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY)
+    if (saved === 'ebook' || saved === 'card') return saved
+  } catch {
+    /* ignore */
+  }
+  return 'card'
+}
 
 function SentenceStudy() {
   const { setId } = useParams()
+  const [searchParams] = useSearchParams()
   const setIdNum = Number(setId)
   const setIdValid = Number.isInteger(setIdNum) && setIdNum > 0
 
@@ -38,7 +52,11 @@ function SentenceStudy() {
   const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
   const [marks, setMarks] = useState({})
   const [weakOnlyMode, setWeakOnlyMode] = useState(false)
+  const [viewMode, setViewMode] = useState(() => readInitialViewMode(searchParams))
+  const [showBack, setShowBack] = useState(false)
+  const [fadeKey, setFadeKey] = useState(0)
   const previousIsFlippedRef = useRef(false)
+  const ebookAudioRef = useRef(null)
 
   const activeSentences = useMemo(() => {
     if (sentences.length === 0) return []
@@ -157,6 +175,7 @@ function SentenceStudy() {
   useEffect(() => {
     setCurrentIndex(0)
     setIsFlipped(false)
+    setShowBack(false)
   }, [setIdNum, setIdValid])
 
   useEffect(() => {
@@ -218,6 +237,8 @@ function SentenceStudy() {
       persistWeakOnly(setIdNum, next)
       setCurrentIndex(0)
       setIsFlipped(false)
+      setShowBack(false)
+      setFadeKey((k) => k + 1)
     },
     [setIdNum],
   )
@@ -272,7 +293,50 @@ function SentenceStudy() {
       }
       return !prev
     })
+  }, [setAllowCountdown])
+
+  const handleViewModeChange = useCallback((mode) => {
+    setViewMode(mode)
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode)
+    } catch {
+      /* ignore */
+    }
+    if (mode === 'ebook') {
+      setAllowCountdown(false)
+      setShowBack(false)
+      setFadeKey((k) => k + 1)
+    } else {
+      setIsFlipped(false)
+    }
+  }, [setAllowCountdown])
+
+  const handleEbookToggleSide = useCallback(() => {
+    setShowBack((prev) => !prev)
+    setFadeKey((k) => k + 1)
   }, [])
+
+  const goToEbookPage = useCallback(
+    (nextIndex) => {
+      if (nextIndex < 0 || nextIndex >= activeSentences.length) return
+      setCurrentIndex(nextIndex)
+      setShowBack(false)
+      setFadeKey((k) => k + 1)
+      if (ebookAudioRef.current) {
+        ebookAudioRef.current.pause()
+        ebookAudioRef.current = null
+      }
+    },
+    [activeSentences.length],
+  )
+
+  const goEbookPrev = useCallback(() => {
+    goToEbookPage(currentIndex - 1)
+  }, [currentIndex, goToEbookPage])
+
+  const goEbookNext = useCallback(() => {
+    goToEbookPage(currentIndex + 1)
+  }, [currentIndex, goToEbookPage])
 
   const getFullAudioUrl = useCallback((audioUrl) => {
     if (!audioUrl) return ''
@@ -289,12 +353,18 @@ function SentenceStudy() {
     const fullUrl = getFullAudioUrl(entry?.audioUrl)
     if (!fullUrl) return
     try {
+      if (viewMode === 'ebook' && ebookAudioRef.current) {
+        ebookAudioRef.current.pause()
+      }
       const audio = new Audio(fullUrl)
+      if (viewMode === 'ebook') {
+        ebookAudioRef.current = audio
+      }
       await audio.play()
     } catch (error) {
       console.error(error)
     }
-  }, [audioStateBySentenceId, currentSentence?.sentenceId, getFullAudioUrl])
+  }, [audioStateBySentenceId, currentSentence?.sentenceId, getFullAudioUrl, viewMode])
 
   useEffect(() => {
     const wasFlipped = previousIsFlippedRef.current
@@ -326,13 +396,17 @@ function SentenceStudy() {
 
       if (event.code === 'Space') {
         event.preventDefault()
-        flipCard()
+        if (viewMode === 'ebook') {
+          handleEbookToggleSide()
+        } else {
+          flipCard()
+        }
       }
     }
 
     window.addEventListener('keydown', handleSpaceFlip)
     return () => window.removeEventListener('keydown', handleSpaceFlip)
-  }, [flipCard])
+  }, [flipCard, handleEbookToggleSide, viewMode])
 
   if (!setIdValid) {
     return (
@@ -349,18 +423,20 @@ function SentenceStudy() {
   }
 
   return (
-    <section className="container">
-      <div className="studyPageIntro">
+    <section className={viewMode === 'ebook' ? 'paragraphReaderPage studyEbookPage' : 'container'}>
+      <div className={viewMode === 'ebook' ? 'studyEbookIntro' : 'studyPageIntro'}>
         <div className="studyPageIntroTopRow">
           <div className="studyPageIntroHeadingRow">
             <div>
-              <h2>문장 학습</h2>
+              <h2>{viewMode === 'ebook' ? 'Ebook 모드' : '문장 학습'}</h2>
               <p className="studyDeckPosition">
                 {activeSentences.length === 0
                   ? weakOnlyMode
                     ? '모름 카드 0장'
                     : `${sentences.length === 0 ? 0 : currentIndex + 1} / ${sentences.length} 문장`
-                  : `${currentIndex + 1} / ${activeSentences.length}장 · ${weakOnlyMode ? '모름만 복습' : '전체'}`}
+                  : viewMode === 'ebook'
+                    ? `${currentIndex + 1} / ${activeSentences.length} 페이지`
+                    : `${currentIndex + 1} / ${activeSentences.length}장 · ${weakOnlyMode ? '모름만 복습' : '전체'}`}
               </p>
               <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
                 ← 문장 세트로
@@ -368,6 +444,27 @@ function SentenceStudy() {
             </div>
             <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
           </div>
+          <div className="libraryModeTabs studyViewModeTabs" role="tablist" aria-label="학습 보기 방식">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'card'}
+              className={`libraryModeTab${viewMode === 'card' ? ' libraryModeTab--active' : ''}`}
+              onClick={() => handleViewModeChange('card')}
+            >
+              카드 모드
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === 'ebook'}
+              className={`libraryModeTab${viewMode === 'ebook' ? ' libraryModeTab--active' : ''}`}
+              onClick={() => handleViewModeChange('ebook')}
+            >
+              Ebook 모드
+            </button>
+          </div>
+          {viewMode === 'card' ? (
           <div className="countdownControlPanel">
             <label className="countToggle" aria-label="Count ON/OFF">
               <span className="countToggleLabel">Count</span>
@@ -417,8 +514,9 @@ function SentenceStudy() {
               </div>
             ) : null}
           </div>
+          ) : null}
         </div>
-        {!loading && !error && sentences.length > 0 ? (
+        {viewMode === 'card' && !loading && !error && sentences.length > 0 ? (
           <div className="studyDeckMetaRow">
             <div className="studyMarkStats" role="status" aria-live="polite">
               <span className="studyMarkStat studyMarkStat--total">전체 {markStats.total}</span>
@@ -448,7 +546,7 @@ function SentenceStudy() {
         ) : null}
       </div>
 
-      {countdownEnabled ? (
+      {viewMode === 'card' && countdownEnabled ? (
         <div className="studyCountdown" aria-live="polite">
           {isFlipped ? (
             <p className="studyCountdownHint">앞면을 다시 보려면 카드를 뒤집으세요.</p>
@@ -464,42 +562,90 @@ function SentenceStudy() {
       ) : null}
 
       {loading ? (
-        <SentenceBox title="문장 학습 카드" status="학습 중" progress="로딩" text="문장을 불러오는 중입니다." />
+        viewMode === 'ebook' ? (
+          <p className="libraryStatusText paragraphReaderStatus">문장을 불러오는 중입니다.</p>
+        ) : (
+          <SentenceBox title="문장 학습 카드" status="학습 중" progress="로딩" text="문장을 불러오는 중입니다." />
+        )
       ) : error ? (
-        <SentenceBox
-          title="문장 학습 카드"
-          status="오류"
-          progress="불러오기 실패"
-          text="문장을 불러오지 못했습니다."
-        />
-      ) : sentences.length === 0 ? (
-        <SentenceBox
-          title="문장 학습 카드"
-          status="학습 중"
-          progress="문장 없음"
-          text="아직 등록된 문장이 없습니다."
-        />
-      ) : activeSentences.length === 0 ? (
-        <div className="studyWeakEmptyWrap">
+        viewMode === 'ebook' ? (
+          <p className="libraryStatusText paragraphReaderStatus">문장을 불러오지 못했습니다.</p>
+        ) : (
           <SentenceBox
             title="문장 학습 카드"
-            status="복습"
-            progress="모름 0장"
-            text="모름(×)으로 표시된 카드가 없습니다. 어려운 문장에서 ×를 누르거나, 전체 학습으로 돌아가 주세요."
+            status="오류"
+            progress="불러오기 실패"
+            text="문장을 불러오지 못했습니다."
           />
-          <button
-            type="button"
-            className="headerGhostButton studyWeakEmptyBackBtn"
-            onClick={() => {
-              setWeakOnlyMode(false)
-              persistWeakOnly(setIdNum, false)
-              setCurrentIndex(0)
-              setIsFlipped(false)
-            }}
-          >
-            전체 문장 학습으로
-          </button>
-        </div>
+        )
+      ) : sentences.length === 0 ? (
+        viewMode === 'ebook' ? (
+          <p className="libraryStatusText paragraphReaderStatus">아직 등록된 문장이 없습니다.</p>
+        ) : (
+          <SentenceBox
+            title="문장 학습 카드"
+            status="학습 중"
+            progress="문장 없음"
+            text="아직 등록된 문장이 없습니다."
+          />
+        )
+      ) : activeSentences.length === 0 ? (
+        viewMode === 'ebook' ? (
+          <div className="studyWeakEmptyWrap">
+            <p className="libraryStatusText paragraphReaderStatus">
+              모름(×)으로 표시된 카드가 없습니다. 카드 모드에서 전체 학습으로 돌아가 주세요.
+            </p>
+            <button
+              type="button"
+              className="headerGhostButton studyWeakEmptyBackBtn"
+              onClick={() => {
+                setWeakOnlyMode(false)
+                persistWeakOnly(setIdNum, false)
+                setCurrentIndex(0)
+                setShowBack(false)
+              }}
+            >
+              전체 문장 학습으로
+            </button>
+          </div>
+        ) : (
+          <div className="studyWeakEmptyWrap">
+            <SentenceBox
+              title="문장 학습 카드"
+              status="복습"
+              progress="모름 0장"
+              text="모름(×)으로 표시된 카드가 없습니다. 어려운 문장에서 ×를 누르거나, 전체 학습으로 돌아가 주세요."
+            />
+            <button
+              type="button"
+              className="headerGhostButton studyWeakEmptyBackBtn"
+              onClick={() => {
+                setWeakOnlyMode(false)
+                persistWeakOnly(setIdNum, false)
+                setCurrentIndex(0)
+                setIsFlipped(false)
+              }}
+            >
+              전체 문장 학습으로
+            </button>
+          </div>
+        )
+      ) : viewMode === 'ebook' ? (
+        <StudyEbookView
+          frontText={cardSides.frontText}
+          backText={cardSides.backText}
+          frontDir={cardSides.frontDir}
+          backDir={cardSides.backDir}
+          showBack={showBack}
+          fadeKey={fadeKey}
+          onToggleSide={handleEbookToggleSide}
+          currentIndex={currentIndex}
+          totalPages={activeSentences.length}
+          onPrev={goEbookPrev}
+          onNext={goEbookNext}
+          hasAudio={Boolean(audioStateBySentenceId[currentSentence?.sentenceId]?.audioUrl)}
+          onPlayAudio={playCurrentSentenceAudio}
+        />
       ) : (
         <SentenceBox
           title="문장 학습 카드"
@@ -516,7 +662,7 @@ function SentenceStudy() {
         />
       )}
 
-      {!loading && !error && sentences.length > 0 && activeSentences.length > 0 ? (
+      {viewMode === 'card' && !loading && !error && sentences.length > 0 && activeSentences.length > 0 ? (
         <StudyMarkBar onWrong={() => handleMark('unknown')} onCorrect={() => handleMark('known')} />
       ) : null}
 

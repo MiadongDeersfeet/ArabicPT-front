@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getSets } from '../api/sentenceSetApi.js'
+import { SHOW_PARAGRAPH_LIBRARY } from '../constants/featureFlags.js'
 
 function formatWhen(value) {
   if (value == null || value === '') return null
@@ -51,9 +52,11 @@ function Library() {
           <span className="libraryModeTab libraryModeTab--active" aria-current="page">
             문장 카드 학습
           </span>
-          <Link to="/library/paragraph-sets" className="libraryModeTab">
-            문단 Ebook 학습
-          </Link>
+          {SHOW_PARAGRAPH_LIBRARY ? (
+            <Link to="/library/paragraph-sets" className="libraryModeTab">
+              문단 Ebook 학습
+            </Link>
+          ) : null}
         </div>
       </div>
 
