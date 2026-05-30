@@ -201,9 +201,48 @@ a.primaryButton {
 }
 
 .sentenceBody {
+  min-height: 0;
+  padding: 0;
+  display: block;
+}
+
+.sentenceBox:not(.studySentenceBox) .sentenceBody {
   min-height: 230px;
   padding: 18px 16px 24px;
+}
+
+.sentenceBox.studySentenceBox .sentenceBody,
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceBody {
+  padding: 0;
+  min-height: 0;
+}
+
+.sentenceBox.studySentenceBox .sentenceFlipScene,
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFlipScene {
+  height: min(52vh, 460px);
+  min-height: 220px;
+  max-height: min(58vh, 500px);
+}
+
+.sentenceBox.studySentenceBox .sentenceFlipInner,
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFlipInner {
+  height: 100%;
+  min-height: 100%;
+}
+
+.sentenceBox.studySentenceBox .sentenceFace,
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFace {
   display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 20px;
+}
+
+.sentenceBox.studySentenceBox .sentenceText {
+  margin: 0;
+  font-size: clamp(1.05rem, 3.6vw, 1.6rem);
+  line-height: 1.75;
 }
 
 .sentenceFlipScene {
@@ -412,8 +451,50 @@ a.primaryButton {
 .studyPageIntro {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.studyPageSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.studyPageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.studyPageHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.studyPageHeaderText h2 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.studyPageToolbar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.studyViewModeTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.studyBackToSetLink {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.875rem;
 }
 
 .studyPageIntroTopRow {
@@ -1658,19 +1739,14 @@ a.primaryButton {
   box-shadow: 0 12px 32px rgba(17, 24, 39, 0.08);
 }
 
-.librarySetPreviewSentenceWrap .sentenceBody {
-  min-height: 300px;
-  padding: 28px 22px 32px;
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceText {
+  margin: 0;
+  font-size: clamp(1.25rem, 4.2vw, 2rem);
+  line-height: 1.75;
 }
 
-.librarySetPreviewSentenceWrap .sentenceFlipScene,
-.librarySetPreviewSentenceWrap .sentenceFlipInner {
-  min-height: 248px;
-}
-
-.librarySetPreviewSentenceWrap .sentenceText {
-  font-size: clamp(1.65rem, 5.4vw, 2.75rem);
-  line-height: 1.7;
+.librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFace {
+  padding: 20px 18px 24px;
 }
 
 .librarySetPreviewSentenceWrap .sentenceHeader {
@@ -2403,18 +2479,27 @@ a.primaryButton {
 
 @media (max-width: 520px) {
   .studyPageIntro {
-    align-items: stretch;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .studyPageIntroTopRow {
-    flex-direction: column;
-    align-items: stretch;
+  .studyPageHeader {
+    flex-direction: row;
+    align-items: flex-start;
   }
 
-  .countdownControlPanel {
-    align-items: flex-end;
-    gap: 6px;
+  .studyPageHeaderText h2 {
+    font-size: 1.1rem;
+  }
+
+  .studyPageToolbar {
+    justify-content: stretch;
+  }
+
+  .studyPageToolbar .countdownControlPanel {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .studyDeckMetaRow {
@@ -2832,34 +2917,49 @@ a.primaryButton {
 
 /* Sentence study — Ebook mode (기존 문장 세트) */
 
-.studyEbookPage {
-  width: min(100% - 32px, 720px);
-}
-
-.studyEbookIntro {
-  margin-bottom: 12px;
-}
-
-.studyViewModeTabs {
-  margin-top: 12px;
-  width: 100%;
+.studyEbookStage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .studyEbookPageCard {
   flex: 1;
-  min-height: min(52vh, 420px);
-  max-height: min(62vh, 520px);
+  min-height: min(52vh, 460px);
+  max-height: min(58vh, 500px);
+  padding: 14px 16px 16px;
+}
+
+.studyEbookCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+
+.studyEbookCardHeader .paragraphReaderSideHint {
+  margin: 0;
+}
+
+.studyEbookCardHeader .sentenceAudioPlayButton {
+  flex-shrink: 0;
 }
 
 .studyEbookFooter {
-  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 0;
 }
 
-.studyEbookPageIndicator {
-  margin: 10px 0 0;
-  text-align: center;
+.studyEbookFooterPage {
   font-size: 0.875rem;
   font-weight: 600;
   color: #6b7280;
+  min-width: 4.5rem;
+  text-align: center;
 }
 

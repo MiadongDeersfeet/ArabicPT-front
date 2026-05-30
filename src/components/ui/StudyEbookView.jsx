@@ -20,8 +20,15 @@ function StudyEbookView({
   const displayDir = showBack ? backDir : frontDir
   const sideLabel = displayDir === 'rtl' ? '아랍어' : '한국어'
 
+  const handleAudioClick = (event) => {
+    event.stopPropagation()
+    if (typeof onPlayAudio === 'function') {
+      onPlayAudio()
+    }
+  }
+
   return (
-    <>
+    <div className="studyEbookStage">
       <div
         key={fadeKey}
         className="paragraphReaderPageCard studyEbookPageCard"
@@ -38,7 +45,36 @@ function StudyEbookView({
           showBack ? '뒷면 — 터치하면 앞면으로 전환' : '앞면 — 터치하면 뒷면으로 전환'
         }
       >
-        <p className="paragraphReaderSideHint">{sideLabel} · 터치하여 전환</p>
+        <div className="studyEbookCardHeader">
+          <p className="paragraphReaderSideHint">{sideLabel} · 터치하여 전환</p>
+          {hasAudio ? (
+            <button
+              type="button"
+              className="sentenceAudioPlayButton"
+              onClick={handleAudioClick}
+              aria-label="문장 오디오 재생"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M14 5v14l-6-4H4V9h4z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M18 9a5 5 0 0 1 0 6M20.5 6.5a8.5 8.5 0 0 1 0 11"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          ) : null}
+        </div>
         <div
           className={`paragraphReaderBody paragraphReaderBody--fade ${displayDir === 'rtl' ? 'paragraphReaderBody--ar' : 'paragraphReaderBody--ko'}`}
           dir={displayDir}
@@ -47,7 +83,7 @@ function StudyEbookView({
         </div>
       </div>
 
-      <footer className="paragraphReaderFooter studyEbookFooter">
+      <footer className="studyEbookFooter">
         <button
           type="button"
           className="paragraphReaderNavBtn"
@@ -60,20 +96,9 @@ function StudyEbookView({
         >
           ‹
         </button>
-
-        <button
-          type="button"
-          className="paragraphReaderAudioBtn"
-          disabled={!hasAudio}
-          onClick={(e) => {
-            e.stopPropagation()
-            onPlayAudio()
-          }}
-          aria-label={hasAudio ? '음성 재생' : '음성 없음'}
-        >
-          {hasAudio ? '▶ 재생' : '음성 없음'}
-        </button>
-
+        <span className="studyEbookFooterPage" aria-live="polite">
+          {totalPages > 0 ? `${currentIndex + 1} / ${totalPages}` : '0 / 0'}
+        </span>
         <button
           type="button"
           className="paragraphReaderNavBtn"
@@ -87,11 +112,7 @@ function StudyEbookView({
           ›
         </button>
       </footer>
-
-      <p className="studyEbookPageIndicator" aria-live="polite">
-        {totalPages > 0 ? `${currentIndex + 1} / ${totalPages}` : '0 / 0'}
-      </p>
-    </>
+    </div>
   )
 }
 

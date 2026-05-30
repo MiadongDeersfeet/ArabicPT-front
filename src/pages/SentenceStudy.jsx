@@ -423,99 +423,102 @@ function SentenceStudy() {
   }
 
   return (
-    <section className={viewMode === 'ebook' ? 'paragraphReaderPage studyEbookPage' : 'container'}>
-      <div className={viewMode === 'ebook' ? 'studyEbookIntro' : 'studyPageIntro'}>
-        <div className="studyPageIntroTopRow">
-          <div className="studyPageIntroHeadingRow">
-            <div>
-              <h2>{viewMode === 'ebook' ? 'Ebook 모드' : '문장 학습'}</h2>
-              <p className="studyDeckPosition">
-                {activeSentences.length === 0
-                  ? weakOnlyMode
-                    ? '모름 카드 0장'
-                    : `${sentences.length === 0 ? 0 : currentIndex + 1} / ${sentences.length} 문장`
-                  : viewMode === 'ebook'
-                    ? `${currentIndex + 1} / ${activeSentences.length} 페이지`
-                    : `${currentIndex + 1} / ${activeSentences.length}장 · ${weakOnlyMode ? '모름만 복습' : '전체'}`}
-              </p>
-              <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
-                ← 문장 세트로
-              </Link>
-            </div>
-            <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
+    <section className="container sectionSpacing studyPageSection">
+      <div className="studyPageIntro">
+        <header className="studyPageHeader">
+          <div className="studyPageHeaderText">
+            <h2>{viewMode === 'ebook' ? 'Ebook 모드' : '문장 학습'}</h2>
+            <p className="studyDeckPosition">
+              {activeSentences.length === 0
+                ? weakOnlyMode
+                  ? '모름 카드 0장'
+                  : `${sentences.length === 0 ? 0 : currentIndex + 1} / ${sentences.length} 문장`
+                : viewMode === 'ebook'
+                  ? `${currentIndex + 1} / ${activeSentences.length} 페이지`
+                  : `${currentIndex + 1} / ${activeSentences.length}장 · ${weakOnlyMode ? '모름만 복습' : '전체'}`}
+            </p>
+            <Link to={`/library/sets/${setIdNum}`} className="textLink studyBackToSetLink">
+              ← 문장 세트로
+            </Link>
           </div>
-          <div className="libraryModeTabs studyViewModeTabs" role="tablist" aria-label="학습 보기 방식">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewMode === 'card'}
-              className={`libraryModeTab${viewMode === 'card' ? ' libraryModeTab--active' : ''}`}
-              onClick={() => handleViewModeChange('card')}
-            >
-              카드 모드
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewMode === 'ebook'}
-              className={`libraryModeTab${viewMode === 'ebook' ? ' libraryModeTab--active' : ''}`}
-              onClick={() => handleViewModeChange('ebook')}
-            >
-              Ebook 모드
-            </button>
-          </div>
-          {viewMode === 'card' ? (
-          <div className="countdownControlPanel">
-            <label className="countToggle" aria-label="Count ON/OFF">
-              <span className="countToggleLabel">Count</span>
-              <input type="checkbox" checked={countdownEnabled} onChange={handleCountdownToggle} />
-              <span className="countToggleTrack" aria-hidden="true">
-                <span className="countToggleThumb" />
-                <span className="countToggleState">{countdownEnabled ? 'ON' : 'OFF'}</span>
-              </span>
-            </label>
-            {countdownEnabled ? (
-              <div className="countStepper" aria-label="카운트다운 시간 설정">
-                <button
-                  type="button"
-                  className="countStepperButton"
-                  onClick={() => handleStepButtonClick(-1)}
-                  onPointerDown={(event) => startLongPressAdjust(-1, event)}
-                  onPointerUp={stopLongPressAdjust}
-                  onPointerLeave={stopLongPressAdjust}
-                  onPointerCancel={stopLongPressAdjust}
-                  disabled={isCountdownRunning || countdownSeconds <= MIN_COUNTDOWN_SECONDS}
-                  aria-label="카운트다운 시간 1초 감소"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min={MIN_COUNTDOWN_SECONDS}
-                  max={MAX_COUNTDOWN_SECONDS}
-                  className="countStepperValue"
-                  value={countdownSeconds}
-                  onChange={handleCountdownSecondsChange}
-                  aria-label="카운트다운 시간(초)"
-                />
-                <button
-                  type="button"
-                  className="countStepperButton"
-                  onClick={() => handleStepButtonClick(1)}
-                  onPointerDown={(event) => startLongPressAdjust(1, event)}
-                  onPointerUp={stopLongPressAdjust}
-                  onPointerLeave={stopLongPressAdjust}
-                  onPointerCancel={stopLongPressAdjust}
-                  disabled={isCountdownRunning || countdownSeconds >= MAX_COUNTDOWN_SECONDS}
-                  aria-label="카운트다운 시간 1초 증가"
-                >
-                  +
-                </button>
-              </div>
-            ) : null}
-          </div>
-          ) : null}
+          <StudySettingsMenu cardSideReversed={cardSideReversed} onToggleCardSide={toggleCardSideOrder} />
+        </header>
+
+        <div className="libraryModeTabs studyViewModeTabs" role="tablist" aria-label="학습 보기 방식">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === 'card'}
+            className={`libraryModeTab${viewMode === 'card' ? ' libraryModeTab--active' : ''}`}
+            onClick={() => handleViewModeChange('card')}
+          >
+            카드 모드
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === 'ebook'}
+            className={`libraryModeTab${viewMode === 'ebook' ? ' libraryModeTab--active' : ''}`}
+            onClick={() => handleViewModeChange('ebook')}
+          >
+            Ebook 모드
+          </button>
         </div>
+
+        {viewMode === 'card' ? (
+          <div className="studyPageToolbar">
+            <div className="countdownControlPanel">
+              <label className="countToggle" aria-label="Count ON/OFF">
+                <span className="countToggleLabel">Count</span>
+                <input type="checkbox" checked={countdownEnabled} onChange={handleCountdownToggle} />
+                <span className="countToggleTrack" aria-hidden="true">
+                  <span className="countToggleThumb" />
+                  <span className="countToggleState">{countdownEnabled ? 'ON' : 'OFF'}</span>
+                </span>
+              </label>
+              {countdownEnabled ? (
+                <div className="countStepper" aria-label="카운트다운 시간 설정">
+                  <button
+                    type="button"
+                    className="countStepperButton"
+                    onClick={() => handleStepButtonClick(-1)}
+                    onPointerDown={(event) => startLongPressAdjust(-1, event)}
+                    onPointerUp={stopLongPressAdjust}
+                    onPointerLeave={stopLongPressAdjust}
+                    onPointerCancel={stopLongPressAdjust}
+                    disabled={isCountdownRunning || countdownSeconds <= MIN_COUNTDOWN_SECONDS}
+                    aria-label="카운트다운 시간 1초 감소"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={MIN_COUNTDOWN_SECONDS}
+                    max={MAX_COUNTDOWN_SECONDS}
+                    className="countStepperValue"
+                    value={countdownSeconds}
+                    onChange={handleCountdownSecondsChange}
+                    aria-label="카운트다운 시간(초)"
+                  />
+                  <button
+                    type="button"
+                    className="countStepperButton"
+                    onClick={() => handleStepButtonClick(1)}
+                    onPointerDown={(event) => startLongPressAdjust(1, event)}
+                    onPointerUp={stopLongPressAdjust}
+                    onPointerLeave={stopLongPressAdjust}
+                    onPointerCancel={stopLongPressAdjust}
+                    disabled={isCountdownRunning || countdownSeconds >= MAX_COUNTDOWN_SECONDS}
+                    aria-label="카운트다운 시간 1초 증가"
+                  >
+                    +
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         {viewMode === 'card' && !loading && !error && sentences.length > 0 ? (
           <div className="studyDeckMetaRow">
             <div className="studyMarkStats" role="status" aria-live="polite">
@@ -648,6 +651,7 @@ function SentenceStudy() {
         />
       ) : (
         <SentenceBox
+          className="studySentenceBox"
           title="문장 학습 카드"
           status="학습 중"
           progress={`문장 ${currentIndex + 1} / ${activeSentences.length}`}
