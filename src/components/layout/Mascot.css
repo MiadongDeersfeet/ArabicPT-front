@@ -1,0 +1,41 @@
+.mascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  /* 마스코트는 항상 보조 요소다. 없거나 줄어들어도 텍스트·버튼 배치가 유지되도록
+     최대 폭만 제한하고 레이아웃 폭을 강제하지 않는다. */
+  flex: none;
+}
+
+.mascot--small {
+  max-width: 72px;
+}
+
+.mascot--medium {
+  max-width: 160px;
+}
+
+.mascot--large {
+  max-width: 240px;
+}
+
+@media (max-width: 767px) {
+  .mascot--hideMobile {
+    display: none;
+  }
+
+  .mascot--large {
+    max-width: 168px;
+  }
+
+  .mascot--medium {
+    max-width: 120px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mascot--large {
+    max-width: 320px;
+  }
+}

@@ -1,5 +1,5 @@
 .container {
-  width: min(100% - 32px, 1200px);
+  width: min(100% - (var(--container-gutter) * 2), var(--container-width));
   margin: 0 auto;
 }
 

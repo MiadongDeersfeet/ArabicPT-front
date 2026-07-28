@@ -1,44 +1,103 @@
+/* 공개/앱 두 variant가 동일한 높이·정렬·반응형 규칙을 공유한다.
+   variant 전용 선택자를 추가하지 말 것. */
+
 .siteFooter {
-  padding: 16px 0;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
 }
 
 .siteFooterInner {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-.siteFooterInner strong {
-  display: block;
-}
-
-.siteFooterInner p {
-  margin: 6px 0 0;
-  color: #6b7280;
-}
-
-.siteFooterLinks {
   display: flex;
-  gap: 14px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 20px;
+  min-height: 76px;
+  padding: 12px 0;
 }
 
-.siteFooterLinks a {
-  min-height: 40px;
+.footerIdentity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-width: 0;
+}
+
+/* 푸터의 브랜드는 클릭 대상이 아니므로 헤더용 최소 높이를 쓰지 않는다. */
+.footerIdentity .brandLogo {
+  min-height: 0;
+}
+
+.footerTagline {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 16px;
+  margin-left: auto;
+}
+
+.footerLink {
   display: inline-flex;
   align-items: center;
-  color: #4b5563;
+  min-height: 36px;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
 }
 
-@media (min-width: 768px) {
-  .siteFooter {
-    padding: 20px 0;
+a.footerLink:hover {
+  color: var(--color-primary);
+}
+
+/* 아직 페이지가 없는 항목 */
+.footerLinkPending {
+  color: var(--color-text-secondary);
+  opacity: 0.55;
+  cursor: default;
+}
+
+.footerCopyright {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* 모바일: 첫 줄은 브랜드·태그라인, 둘째 줄은 링크와 저작권. */
+@media (max-width: 767px) {
+  .siteFooterInner {
+    align-items: flex-start;
+    gap: 2px 12px;
   }
 
-  .siteFooterInner {
-    grid-template-columns: 1fr auto;
-    align-items: center;
+  .footerIdentity {
+    flex: 1 1 100%;
+  }
+
+  .footerTagline {
+    font-size: 0.84rem;
+  }
+
+  .footerLinks {
+    flex: 1 1 auto;
+    margin-left: 0;
+    gap: 0 12px;
+  }
+
+  .footerLink {
+    min-height: 32px;
+    font-size: 0.82rem;
+  }
+
+  .footerCopyright {
+    margin-left: auto;
+    align-self: center;
+    font-size: 0.78rem;
   }
 }

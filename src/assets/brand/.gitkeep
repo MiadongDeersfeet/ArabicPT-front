@@ -1,0 +1,15 @@
+ArabicPT 브랜드 자산 위치.
+
+BrandLogo 컴포넌트가 자동으로 잡는 파일 (이 폴더에 넣기만 하면 됨)
+  logo-symbol.svg      모노라인 낙타 심벌. 정사각 viewBox 권장(예: 0 0 48 48).
+                       머리 · 긴 목 · 혹 하나 중심의 단순한 선화.
+                       stroke-width 는 24px 크기에서도 뭉개지지 않게 2 이상.
+
+앱에서 import하지 않는 자산 (외부 배포 · 정적 파일용)
+  logo-full.svg        심벌 + 워드마크 조합. 메일 서명, OG 이미지, 인쇄용.
+  logo-full-white.svg  어두운 배경(에메랄드 푸터 등)용 화이트 버전.
+  favicon.svg          정리 후 front/public/ 로 복사한다.
+  app-icon-192.png     정리 후 front/public/icons/icon-192.png 로 복사한다.
+  app-icon-512.png     정리 후 front/public/icons/icon-512.png 로 복사한다.
+
+전신 낙타 캐릭터(마스코트)는 여기가 아니라 src/assets/mascot/ 에 넣는다.

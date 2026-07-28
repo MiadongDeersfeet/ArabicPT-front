@@ -12,7 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-icon-512.png'],
+      includeAssets: ['favicon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-icon-512.png'],
       manifest: {
         name: 'ArabicPT',
         short_name: 'ArabicPT',

@@ -1,23 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { fetchMyMemberProfile } from '../api/api.js'
-import { getApiBaseUrl } from '../api/baseUrl.js'
 import { getSet } from '../api/sentenceSetApi.js'
 import { getSentencesBySet, updateSentence } from '../api/sentenceApi.js'
 import { generateSentenceAudio, getSentenceAudio } from '../api/audioApi.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import useMemberProfile from '../hooks/useMemberProfile.js'
 import SentenceBox from '../components/ui/SentenceBox.jsx'
 import StudySettingsMenu from '../components/ui/StudySettingsMenu.jsx'
 import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
-
-function resolveProfileImageUrl(raw) {
-  if (raw == null || String(raw).trim() === '') return null
-  const u = String(raw).trim()
-  if (u.startsWith('http://') || u.startsWith('https://')) return u
-  const base = getApiBaseUrl().replace(/\/$/, '')
-  if (u.startsWith('/')) return `${base}${u}`
-  return `${base}/${u}`
-}
 
 function StarIcon({ filled }) {
   return (
@@ -78,7 +68,6 @@ function LibrarySetDetail() {
   const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
   const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
   const [modifiedSentenceMap, setModifiedSentenceMap] = useState({})
-  const [memberProfile, setMemberProfile] = useState(null)
 
   const [starredIds, setStarredIds] = useState(() => new Set())
   const [editingSentenceId, setEditingSentenceId] = useState(null)
@@ -89,15 +78,12 @@ function LibrarySetDetail() {
 
   const starStorageKey = useMemo(() => `arabicpt-set-stars-${setIdNum}`, [setIdNum])
 
+  const { profile: memberProfile, profileImageUrl } = useMemberProfile()
+
   const displayName = useMemo(() => {
     const n = (memberProfile?.name ?? auth?.name ?? '').trim()
     return n || '회원'
   }, [memberProfile?.name, auth?.name])
-
-  const profileImageUrl = useMemo(() => {
-    const raw = memberProfile?.profileImage ?? memberProfile?.profile_image
-    return resolveProfileImageUrl(raw)
-  }, [memberProfile])
 
   useEffect(() => {
     if (!setIdValid) return
@@ -132,33 +118,6 @@ function LibrarySetDetail() {
     else next.add(sentenceId)
     persistStars(next)
   }
-
-  useEffect(() => {
-    if (!auth?.accessToken) {
-      setMemberProfile(null)
-      return
-    }
-    let alive = true
-    ;(async () => {
-      try {
-        const p = await fetchMyMemberProfile()
-        if (!alive) return
-        if (!p) {
-          setMemberProfile(null)
-          return
-        }
-        setMemberProfile({
-          name: p?.name ?? p?.NAME ?? '',
-          profileImage: p?.profileImage ?? p?.profile_image ?? null,
-        })
-      } catch {
-        if (alive) setMemberProfile(null)
-      }
-    })()
-    return () => {
-      alive = false
-    }
-  }, [auth?.accessToken])
 
   useEffect(() => {
     if (!setIdValid) return

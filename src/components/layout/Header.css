@@ -1,132 +1,342 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+/* 공개 헤더(PublicHeader)와 앱 헤더(AppHeader)가 함께 쓰는 스타일 */
 
 .siteHeader {
-  padding: 16px 0;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .siteHeaderInner {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--header-height);
 }
 
-.headerHomeLink {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  display: inline-grid;
-  place-items: center;
-  color: #008b5a;
-  background: #ffffff;
+/* ---------- 데스크톱 내비게이션 ---------- */
+
+.headerNav {
+  display: none;
+  align-items: center;
+  gap: 4px;
 }
 
-.headerHomeLink svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
+.headerNavLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color var(--transition-base), background var(--transition-base);
 }
 
-.siteBrandLink {
-  justify-self: center;
-  text-align: center;
-  font-size: 1.45rem;
-  font-family: 'Nunito', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #008b5a;
+.headerNavLink:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
 
-.headerDropdown {
-  position: relative;
-  justify-self: end;
+.headerNavLink.isActive {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
+
+/* ---------- 오른쪽 액션 ---------- */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerGhostButton,
+.headerPrimaryButton {
+  min-height: var(--tap-target);
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base);
+}
+
+.headerGhostButton {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.headerGhostButton:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.headerPrimaryButton {
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.headerPrimaryButton:hover {
+  background: var(--color-primary-hover);
+}
+
+/* 데스크톱에서만 보이는 요소 */
+.headerDesktopOnly {
+  display: none;
+}
+
+/* ---------- 햄버거 (공개 헤더 · 모바일) ---------- */
 
 .headerMenuButton {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  flex: none;
   display: inline-grid;
   place-content: center;
-  gap: 4px;
-  background: #ffffff;
-  cursor: pointer;
+  gap: 5px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .headerMenuButton span {
   display: block;
   width: 18px;
   height: 2px;
-  border-radius: 999px;
-  background: #008b5a;
-  transition: transform 0.14s ease, opacity 0.14s ease;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
   transform-origin: center;
+  transition: transform var(--transition-base), opacity var(--transition-base);
 }
 
-.headerMenuButton.open span:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
+.headerMenuButton.isOpen span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
 }
 
-.headerMenuButton.open span:nth-child(2) {
+.headerMenuButton.isOpen span:nth-child(2) {
   opacity: 0;
 }
 
-.headerMenuButton.open span:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
+.headerMenuButton.isOpen span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
-.headerDropdownPanel {
-  margin-top: 8px;
-  padding: 12px;
-  width: min(82vw, 280px);
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.1);
-  position: absolute;
-  right: 0;
-  z-index: 20;
-  display: none;
+/* ---------- 모바일 패널 (공개 헤더) ---------- */
+
+.headerMobilePanel {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
-.headerDropdownPanel.open {
-  display: block;
-}
-
-.siteActions {
+.headerMobileNav {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 4px;
+  padding-top: 8px;
+  padding-bottom: 12px;
 }
 
-.headerGhostButton,
-.headerPrimaryButton {
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: 12px;
+.headerMobileNavLink {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
   font-weight: 600;
 }
 
-.headerGhostButton {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
+.headerMobileNavLink:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
 }
 
-.headerPrimaryButton {
-  border: none;
-  background: #008b5a;
-  color: #ffffff;
+.headerMobileAction {
+  margin-top: 4px;
+  width: 100%;
 }
+
+/* ---------- 프로필 드롭다운 (앱 헤더) ---------- */
+
+.headerProfile {
+  position: relative;
+}
+
+.headerProfileButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap-target);
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--transition-base), background var(--transition-base);
+}
+
+.headerProfileButton:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.headerAvatar {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* DB 프로필 이미지. 로드 실패 시 JS가 이니셜 배지로 되돌린다. */
+.headerAvatar--photo {
+  object-fit: cover;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+}
+
+.headerUserName {
+  display: none;
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.headerChevron {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--color-text-secondary);
+  transition: transform var(--transition-base);
+}
+
+.headerChevron.isOpen {
+  transform: rotate(180deg);
+}
+
+.headerProfileMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  width: min(78vw, 260px);
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.headerProfileMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 12px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 6px;
+}
+
+.headerProfileMetaAvatar {
+  display: inline-flex;
+  flex: none;
+}
+
+.headerProfileMetaText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.headerProfileMetaText strong {
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.headerProfileMetaText span {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.headerProfileNav {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.headerProfileMenuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.headerProfileMenuItem:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.headerProfileLogout {
+  color: var(--color-text-secondary);
+}
+
+/* ---------- 태블릿 이상 ---------- */
 
 @media (min-width: 768px) {
-  .siteHeader {
-    padding: 20px 0;
+  .headerUserName {
+    display: inline;
   }
 
-  .siteBrandLink {
-    font-size: 1.5rem;
+  .headerProfileButton {
+    padding: 0 12px 0 8px;
+  }
+}
+
+/* ---------- 데스크톱 ---------- */
+
+@media (min-width: 1024px) {
+  .headerNav {
+    display: flex;
+  }
+
+  .headerDesktopOnly {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .headerMenuButton {
+    display: none;
+  }
+
+  /* 데스크톱에서는 상단 내비게이션이 있으므로 드롭다운 내 링크는 감춘다. */
+  .headerProfileNav {
+    display: none;
   }
 }

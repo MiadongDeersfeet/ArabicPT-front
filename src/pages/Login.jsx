@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getApiBaseUrl } from '../api/baseUrl'
+import BrandLogo from '../components/layout/BrandLogo.jsx'
 import { POST_LOGIN_REDIRECT_KEY } from '../constants/postLoginRedirect'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
@@ -29,7 +30,10 @@ function Login() {
     <div className="loginPage">
       <div className="loginCard">
         <div className="loginLogo">
-          <h1 className="loginTitle">ArabicPT</h1>
+          {/* h1 내용은 그대로 'ArabicPT'. 텍스트 대신 공통 브랜드 마크로만 바꿨다. */}
+          <h1 className="loginTitle">
+            <BrandLogo as="plain" />
+          </h1>
           <p className="loginSubtitle">아랍어 학습을 시작하세요</p>
         </div>
         <button className="googleLoginButton" onClick={handleGoogleLogin}>
