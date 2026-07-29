@@ -87,6 +87,27 @@
   background: var(--color-primary-hover);
 }
 
+.headerCtaLabel--short {
+  display: none;
+}
+
+/* 모바일: 로고와 햄버거 사이에서 CTA 비중을 낮춘다. */
+@media (max-width: 767px) {
+  .headerCtaLabel--full {
+    display: none;
+  }
+
+  .headerCtaLabel--short {
+    display: inline;
+  }
+
+  .headerPrimaryButton--compact {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.875rem;
+  }
+}
+
 /* 데스크톱에서만 보이는 요소 */
 .headerDesktopOnly {
   display: none;

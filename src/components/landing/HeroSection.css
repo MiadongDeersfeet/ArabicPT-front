@@ -1,0 +1,355 @@
+/* Layout main 상하 패딩을 상쇄해 Hero가 헤더·푸터 사이를 꽉 채우도록 한다. */
+.homeLanding {
+  margin-top: -16px;
+  margin-bottom: -24px;
+}
+
+@media (min-width: 768px) {
+  .homeLanding {
+    margin-top: -20px;
+    margin-bottom: -32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .homeLanding {
+    margin-top: -24px;
+    margin-bottom: -40px;
+  }
+}
+
+.heroSection {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 42% at 50% 100%, rgba(248, 238, 216, 0.7), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 88% 42%, rgba(248, 238, 216, 0.45), transparent 70%),
+    linear-gradient(180deg, var(--color-background) 0%, var(--color-surface-muted) 100%);
+}
+
+/* 모바일에서는 카피와 이미지를 한 흐름으로 묶어 간격을 최소화한다. */
+.heroSectionInner {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0 0;
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 34rem;
+  animation: heroFadeUp 0.55s ease both;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.heroTitle {
+  margin: 0 0 12px;
+  font-size: clamp(2.25rem, 8.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+/* 모바일 3줄(아랍어, / 매일 가볍게 / 시작하세요.) — 768px 이상에서는 2줄로 돌아간다. */
+.heroBreakMobile {
+  display: inline;
+}
+
+.heroTitleAccent {
+  color: var(--color-accent);
+}
+
+.heroDescription {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--color-text-secondary);
+}
+
+.heroBreakDesktop {
+  display: none;
+}
+
+.heroActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.heroButton {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  transition: background var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base), transform var(--transition-base);
+}
+
+.heroButton:active {
+  transform: translateY(1px);
+}
+
+.heroButton--primary {
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.heroButton--primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.heroButton--secondary {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.heroButton--secondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.heroGuestNote {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+/* 모바일: 컨테이너 좌우 여백을 넘어 화면 끝까지 흘려 Hero 하단 마감처럼 보이게 한다. */
+.heroVisual {
+  width: auto;
+  margin: 2px calc(var(--container-gutter) * -1) 0;
+  animation: heroFadeIn 0.7s ease 0.08s both;
+}
+
+.heroVisualFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* 카피 블록에서 이미지로 자연스럽게 이어지도록 상단을 배경색으로 흐린다. */
+.heroVisualFrame::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 44px;
+  background: linear-gradient(180deg, var(--color-surface-muted) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.heroImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: clamp(150px, 30vh, 220px);
+  object-fit: cover;
+  object-position: 72% center;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 아주 좁은 화면에서만 CTA를 세로로 쌓는다. */
+@media (max-width: 340px) {
+  .heroActions {
+    grid-template-columns: 1fr;
+  }
+
+  .heroButton {
+    font-size: 0.9375rem;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroBadge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+/* ---------- 태블릿 이상: 여백·타이포 조정 ---------- */
+@media (min-width: 768px) {
+  .heroSectionInner {
+    gap: 24px;
+    padding: 24px 0 28px;
+  }
+
+  .heroBadge {
+    margin-bottom: 12px;
+    font-size: 0.875rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.25rem, 4vw, 2.75rem);
+    margin-bottom: 14px;
+    line-height: 1.22;
+  }
+
+  .heroBreakMobile {
+    display: none;
+  }
+
+  .heroTitleTail::before {
+    content: ' ';
+  }
+
+  .heroDescription {
+    font-size: 1.05rem;
+    margin-bottom: 22px;
+  }
+
+  .heroActions {
+    width: auto;
+    max-width: 420px;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .heroButton {
+    font-size: 0.98rem;
+    padding: 0 20px;
+  }
+
+  .heroGuestNote {
+    font-size: 0.875rem;
+  }
+
+  .heroVisual {
+    width: 100%;
+    margin: 0;
+  }
+
+  .heroVisualFrame {
+    border-radius: 0;
+  }
+
+  .heroVisualFrame::after {
+    display: none;
+  }
+
+  .heroImage {
+    aspect-ratio: auto;
+    height: auto;
+    max-height: clamp(240px, 36vw, 320px);
+    object-position: 75% center;
+  }
+}
+
+/* ---------- 데스크톱: 45:55 스플릿 ---------- */
+@media (min-width: 1024px) {
+  .heroSectionInner {
+    grid-template-columns: minmax(0, 0.45fr) minmax(0, 0.55fr);
+    gap: 20px 32px;
+    min-height: 520px;
+    padding: 28px 0 32px;
+  }
+
+  .heroCopy {
+    max-width: none;
+    padding-right: 8px;
+    z-index: 1;
+  }
+
+  .heroBreakDesktop {
+    display: inline;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.5rem, 3.2vw, 3rem);
+  }
+
+  .heroDescription {
+    max-width: 28rem;
+  }
+
+  .heroActions {
+    max-width: 400px;
+  }
+
+  .heroVisual {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 0;
+  }
+
+  .heroVisualFrame {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .heroImage {
+    width: 100%;
+    max-height: none;
+    height: min(460px, 58vh);
+    object-fit: contain;
+    object-position: right center;
+  }
+}
+
+@media (min-width: 1200px) {
+  .heroSectionInner {
+    min-height: 560px;
+    gap: 20px 40px;
+  }
+
+  .heroImage {
+    height: min(500px, 58vh);
+  }
+}

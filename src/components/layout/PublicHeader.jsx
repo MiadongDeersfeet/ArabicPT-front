@@ -52,10 +52,12 @@ function PublicHeader() {
           </button>
           <button
             type="button"
-            className="headerPrimaryButton"
+            className="headerPrimaryButton headerPrimaryButton--compact"
             onClick={() => navigate('/login')}
           >
-            무료로 시작하기
+            {/* Hero 내부에도 같은 CTA가 있어 모바일에서는 라벨을 줄인다. */}
+            <span className="headerCtaLabel headerCtaLabel--full">무료로 시작하기</span>
+            <span className="headerCtaLabel headerCtaLabel--short">시작하기</span>
           </button>
 
           <button

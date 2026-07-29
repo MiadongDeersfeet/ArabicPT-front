@@ -1,0 +1,237 @@
+/* 랜딩 두 번째 영역: 핵심 학습 특징 4개 카드.
+   Hero 하단(샌드)에서 아이보리로 자연스럽게 이어지도록 상단만 그라데이션을 준다. */
+.learningFeatures {
+  padding: 26px 0 44px;
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-muted) 0%,
+    var(--color-background) 22%,
+    var(--color-background) 100%
+  );
+}
+
+.featuresHeader {
+  max-width: 40rem;
+  margin: 0 auto 10px;
+  text-align: center;
+}
+
+.featuresOrnament {
+  display: block;
+  width: 56px;
+  height: auto;
+  margin: 0 auto 5px;
+  color: var(--color-accent);
+}
+
+.featuresTitle {
+  margin: 0 0 7px;
+  font-size: clamp(1.4rem, 5.6vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.34;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.featuresTitleAccent {
+  color: var(--color-accent);
+}
+
+.featuresLead {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.featuresBreakMobile {
+  display: inline;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.featuresGrid > li {
+  display: flex;
+}
+
+.featureCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 12px;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.featureNumber {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.featureIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.featureIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.featureTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+}
+
+.featureDescription {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.52;
+  color: var(--color-text-secondary);
+  /* 좁은 2열 카드에서 한국어 단어가 글자 단위로 끊기지 않게 한다. */
+  word-break: keep-all;
+}
+
+/* 모바일에서는 짧은 문구만, 768px 이상에서는 기본 문구만 노출한다.
+   숨긴 쪽은 display:none이라 스크린 리더에도 중복으로 읽히지 않는다. */
+.featureDescription--wide {
+  display: none;
+}
+
+/* 아주 좁은 화면에서는 1열로 전환한다. */
+@media (max-width: 340px) {
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 태블릿: 2열 유지 + 여백 확대 ---------- */
+@media (min-width: 768px) {
+  .learningFeatures {
+    padding: 64px 0 68px;
+  }
+
+  .featuresHeader {
+    margin-bottom: 32px;
+  }
+
+  .featuresOrnament {
+    width: 64px;
+    margin-bottom: 10px;
+  }
+
+  .featuresTitle {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .featuresLead {
+    font-size: 1rem;
+  }
+
+  .featuresBreakMobile {
+    display: none;
+  }
+
+  .featuresGrid {
+    gap: 20px;
+  }
+
+  .featureCard {
+    gap: 10px;
+    padding: 24px 20px;
+  }
+
+  .featureNumber {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .featureIcon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .featureIcon svg {
+    width: 29px;
+    height: 29px;
+  }
+
+  .featureTitle {
+    margin-top: 2px;
+    font-size: 1.0625rem;
+  }
+
+  .featureDescription {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    word-break: normal;
+  }
+
+  .featureDescription--mobile {
+    display: none;
+  }
+
+  .featureDescription--wide {
+    display: block;
+  }
+}
+
+/* ---------- 데스크톱: 4열 한 줄 ---------- */
+@media (min-width: 1024px) {
+  .learningFeatures {
+    padding: 88px 0 92px;
+  }
+
+  .featuresHeader {
+    margin-bottom: 40px;
+  }
+
+  .featuresTitle {
+    font-size: 2.125rem;
+  }
+
+  .featuresGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .featureCard {
+    padding: 26px 20px 24px;
+  }
+
+  .featureTitle {
+    font-size: 1.125rem;
+  }
+}
