@@ -1,0 +1,1057 @@
+/* =========================================================
+   Sentence Study
+   Card / Ebook study styles (Library preview heights stay in App.css)
+
+   Sections:
+   - Layout
+   - Mode Tabs / Card Chrome
+   - Progress
+   - Countdown Control
+   - Card Stage + Motion
+   - Countdown Live
+   - Sentence Typography / Flip / TTS
+   - Mark Actions
+   - Completion
+   - Weak Empty
+   - Ebook
+   - Responsive
+   ========================================================= */
+
+/* —— Layout —— */
+.studyWorkspace {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.studyWorkspace--ebook {
+  width: min(100%, 900px);
+}
+
+/* —— Mode Tabs / Card Chrome ——
+   (session sticky bar lives in StudyLayout.css / StudySessionHeader) */
+.studyCardChrome {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Session page body under sticky StudySessionHeader */
+.studyPageSection--session {
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+
+/* Mode tabs */
+.studySegmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 0;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+.studySegmented .libraryModeTab {
+  margin: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  box-shadow: none;
+  justify-content: center;
+  min-height: 40px;
+  font-size: 0.875rem;
+}
+
+.studySegmented .libraryModeTab--active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid transparent;
+}
+
+/* —— Progress —— */
+.studyProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.studyProgressTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.studyProgressCount {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.studyProgressCountNum {
+  font-size: 1.35rem;
+}
+
+.studyProgressCountSep {
+  margin: 0 2px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.studyProgressCountTotal {
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+}
+
+.studyProgressStats {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.studyProgressStat {
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.studyProgressStatNum {
+  display: inline-block;
+  min-width: 2.25ch;
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+}
+
+.studyProgressStat--known {
+  color: var(--color-primary);
+}
+
+.studyProgressStat--unknown {
+  color: #9a4b2e;
+}
+
+.studyWeakChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.studyWeakChip input {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.studyWeakChip:has(input:checked) {
+  border-color: #8ed0b5;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.studyProgressTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: #e8efe9;
+  overflow: hidden;
+}
+
+.studyProgressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: width 0.26s ease;
+}
+
+.studyProgressStat.isPulsing {
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.studyProgressStat--known.isPulsing {
+  color: var(--color-primary);
+  filter: brightness(0.92);
+}
+
+.studyProgressStat--unknown.isPulsing {
+  color: #8f3f28;
+  filter: brightness(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studyProgressFill {
+    transition: none;
+  }
+
+  .studyProgressStat.isPulsing {
+    filter: none;
+  }
+}
+
+/* —— Countdown Control (header trigger + popover) —— */
+.studyCountdownCtrl {
+  position: relative;
+}
+
+.studyCountdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  max-height: 40px;
+  padding: 0 11px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.studyCountdownTrigger:hover {
+  border-color: var(--color-border-strong, #c9d4cc);
+  color: var(--color-text);
+}
+
+.studyCountdownTrigger.isOn {
+  border-color: #b7d9c8;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.studyCountdownTrigger:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.studyCountdownTriggerText {
+  display: inline-flex;
+  font-variant-numeric: tabular-nums;
+}
+
+.studyCountdownTriggerTextFull {
+  display: inline;
+}
+
+.studyCountdownTriggerTextShort {
+  display: none;
+}
+
+.studyCountdownTriggerIcon {
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.studyCountdownPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  min-width: 208px;
+  padding: 12px 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  animation: studyCountdownPopoverIn 0.16s ease-out;
+}
+
+@keyframes studyCountdownPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studyCountdownPopover {
+    animation: none;
+  }
+
+  .studyCountdownLiveProgress {
+    transition: none;
+  }
+}
+
+.studyCountdownPopoverTitle {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  text-align: start;
+}
+
+.studyCountdownPopoverToggle {
+  justify-content: space-between;
+}
+
+.studyCountdownPopoverHint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.studyCountdownStepper {
+  justify-content: center;
+}
+
+.studyCountdownStepperValueWrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.studyCountdownStepperUnit {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* —— Card Stage + Motion —— */
+.studyCardStage {
+  position: relative;
+  /* reserve space above card; ring overlaps ~10px into card top */
+  padding-top: 30px;
+  /* keep content slide from causing page overflow */
+  overflow-x: clip;
+}
+
+/* Content-only motion: outer card frame stays put */
+.studyCardStage .sentenceBox.studySentenceBox .sentenceBody,
+.studyCardStage .sentenceBox.studySentenceBox .sentenceBottomBar {
+  transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+  will-change: opacity, transform;
+}
+
+.studyCardStage.isExiting .sentenceBox.studySentenceBox .sentenceBody,
+.studyCardStage.isExiting .sentenceBox.studySentenceBox .sentenceBottomBar {
+  opacity: 0.15;
+  transform: translateX(-7px);
+}
+
+.studyCardStage.isEntering .sentenceBox.studySentenceBox .sentenceBody,
+.studyCardStage.isEntering .sentenceBox.studySentenceBox .sentenceBottomBar {
+  animation: studySentenceContentIn 0.16s ease-out both;
+}
+
+@keyframes studySentenceContentIn {
+  from {
+    opacity: 0.15;
+    transform: translateX(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studyCardStage .sentenceBox.studySentenceBox .sentenceBody,
+  .studyCardStage .sentenceBox.studySentenceBox .sentenceBottomBar {
+    transition: none;
+    will-change: auto;
+  }
+
+  .studyCardStage.isExiting .sentenceBox.studySentenceBox .sentenceBody,
+  .studyCardStage.isExiting .sentenceBox.studySentenceBox .sentenceBottomBar,
+  .studyCardStage.isEntering .sentenceBox.studySentenceBox .sentenceBody,
+  .studyCardStage.isEntering .sentenceBox.studySentenceBox .sentenceBottomBar {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* —— Countdown Live (card-docked ring) —— */
+.studyCountdownLiveAnchor {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: max-content;
+  max-width: calc(100% - 96px); /* keep clear of TTS (right) */
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.studyCountdownLiveRing {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.studyCountdownLiveSvg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.studyCountdownLiveTrack {
+  stroke: rgba(20, 90, 71, 0.12);
+}
+
+.studyCountdownLiveProgress {
+  stroke: var(--color-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.35s linear, stroke 0.2s ease;
+}
+
+.studyCountdownLiveNum {
+  position: relative;
+  z-index: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--color-text);
+  min-width: 1.5ch;
+  text-align: center;
+}
+
+.studyCountdownLiveRing.isUrgent .studyCountdownLiveProgress {
+  stroke: #b08a3c;
+}
+
+.studyCountdownLiveRing.isUrgent .studyCountdownLiveNum {
+  font-weight: 700;
+  color: #8a6a2e;
+}
+
+/* —— Sentence Typography / Flip / TTS (Card scope only) —— */
+.studyWorkspace .sentenceBox.studySentenceBox {
+  position: relative;
+  border-radius: 22px;
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox.canFlip:hover {
+  border-color: var(--color-border-strong);
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceBody {
+  padding: 0;
+  min-height: 0;
+  flex: 0 0 auto;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceFlipScene {
+  height: 312px;
+  min-height: 312px;
+  max-height: 312px;
+  perspective: 1200px;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceFlipInner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  transform-style: preserve-3d;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceFace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  grid-area: unset;
+  padding: 0;
+  overflow: hidden;
+  max-height: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceFaceFront {
+  transform: rotateY(0deg);
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceFaceBack {
+  transform: rotateY(180deg);
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* top/right keep TTS overlay safe area (same with/without audio) */
+  padding: 40px 48px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  /* do not center overflow content — margin-block:auto on inner handles short text */
+  align-items: stretch;
+  justify-content: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 90, 71, 0.2) transparent;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextContent {
+  width: 100%;
+  max-width: min(100%, 720px);
+  margin-inline: auto;
+  margin-block: auto;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport::-webkit-scrollbar {
+  width: 4px;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport::-webkit-scrollbar-thumb {
+  background: rgba(20, 90, 71, 0.18);
+  border-radius: 999px;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 90, 71, 0.3);
+}
+
+/* Korean (LTR) — study body, not headline */
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceText {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 88%;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-size: clamp(1.55rem, 2.1vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.72;
+  color: var(--color-text);
+  text-align: center;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Arabic (RTL) — slightly larger + airy line box for harakat */
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceText[dir='rtl'] {
+  font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Amiri', 'Traditional Arabic', serif;
+  font-size: clamp(1.8rem, 2.4vw, 2.05rem);
+  font-weight: 500;
+  line-height: 2.05;
+  text-align: center;
+  color: #111111;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceAudioPlayButton--overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  width: 38px;
+  height: 38px;
+  border-color: #c5ddd2;
+  background: #f7fbf9;
+  color: var(--color-primary);
+  box-shadow: none;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceAudioPlayButton--overlay:hover:not(:disabled) {
+  border-color: #8ed0b5;
+  background: var(--color-primary-soft);
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox.sentenceBox--hintCompact .sentenceBottomBar {
+  flex: 0 0 auto;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  gap: 10px;
+  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceBottomHintDesktop {
+  display: none;
+}
+
+.studyWorkspace .sentenceBox.studySentenceBox .sentenceBottomHintDesktop kbd {
+  padding: 1px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface-muted);
+  font-size: 0.72rem;
+}
+
+/* —— Mark Actions —— */
+.studyMarkBar--actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 0;
+  width: 100%;
+}
+
+.studyActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.studyActionButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.studyActionButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.studyActionButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.studyActionButtonIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.studyActionButton--wrong {
+  background: #fbf0eb;
+  border-color: #edd5c8;
+  color: #8f3f28;
+}
+
+.studyActionButton--wrong:hover:not(:disabled) {
+  background: #f7ebe4;
+  border-color: #e8cfc2;
+}
+
+.studyActionButton--wrong:active:not(:disabled) {
+  background: #f3e5dc;
+}
+
+.studyActionButton--correct {
+  background: #eef6f1;
+  border-color: #c5ddd2;
+  color: var(--color-primary);
+}
+
+.studyActionButton--correct:hover:not(:disabled) {
+  background: #e7f1eb;
+  border-color: #b7d9c8;
+}
+
+.studyActionButton--correct:active:not(:disabled) {
+  background: #e0ece5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studyActionButton:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* —— Completion —— */
+.studyCompletion {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  animation: studyCompletionIn 0.28s ease-out;
+}
+
+@keyframes studyCompletionIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studyCompletion {
+    animation: none;
+  }
+}
+
+.studyCompletionCard {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 28px 24px 24px;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.studyCompletionMark {
+  display: inline-flex;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+}
+
+.studyCompletionMark--allKnown {
+  color: #b08a3c;
+}
+
+.studyCompletionTitle {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 1.75rem);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.studyCompletionSummary {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  max-width: 28em;
+}
+
+.studyCompletionStats {
+  width: 100%;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.studyCompletionStat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.studyCompletionStat--known {
+  background: var(--color-primary-soft);
+  border-color: #b7d9c8;
+  color: var(--color-primary);
+}
+
+.studyCompletionStat--unknown {
+  background: #fbf0eb;
+  border-color: #edd5c8;
+  color: #8f3f28;
+}
+
+.studyCompletionStatLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.studyCompletionStatValue {
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5ch;
+  text-align: end;
+}
+
+.studyCompletionActions {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.studyCompletionPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 16px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse, #fff);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.studyCompletionPrimary:hover {
+  filter: brightness(0.96);
+}
+
+.studyCompletionPrimary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.studyCompletionPrimary:active {
+  transform: scale(0.99);
+}
+
+.studyCompletionSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.studyCompletionSecondary:hover {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border-strong, var(--color-border));
+}
+
+.studyCompletionSecondary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.studyCompletionTertiary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.studyCompletionTertiary:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.studyCompletionTertiary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.studyProgress--compact .studyProgressTop {
+  justify-content: center;
+}
+
+/* —— Weak Empty —— */
+.studyWeakEmptyWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studyWeakEmptyBackBtn {
+  align-self: flex-start;
+}
+
+/* —— Ebook —— */
+.studyEbookChrome {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.studyEbookChrome .studyDeckPosition {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* —— Responsive —— */
+@media (max-width: 520px) {
+  .studyWorkspace {
+    gap: 12px;
+  }
+
+  .studyPageSection--session {
+    padding-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .studyCompletionCard {
+    padding: 24px 16px 20px;
+    border-radius: 20px;
+    gap: 12px;
+  }
+
+  .studyCompletionTitle {
+    font-size: clamp(1.4rem, 5vw, 1.55rem);
+  }
+
+  .studyCompletionSummary {
+    font-size: 0.9rem;
+  }
+
+  .studyCompletionActions {
+    gap: 10px;
+  }
+
+  .studyCompletionPrimary,
+  .studyCompletionSecondary {
+    min-height: 54px;
+    border-radius: 14px;
+  }
+
+  .studyProgressTop {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .studyProgressStats {
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceFlipScene {
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceTextViewport {
+    padding: 40px 48px 28px 24px;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceText {
+    max-width: 100%;
+    font-size: clamp(1.45rem, 4.2vw, 1.6rem);
+    line-height: 1.7;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceText[dir='rtl'] {
+    font-size: clamp(1.7rem, 4.8vw, 1.9rem);
+    line-height: 2.05;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceAudioPlayButton--overlay {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .studyActionButton {
+    min-height: 52px;
+    padding: 14px 10px;
+    font-size: 0.9rem;
+    border-radius: 14px;
+  }
+
+  .studyMarkBar--actions {
+    gap: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .studyPageSection--session {
+    padding-top: 20px;
+    padding-bottom: 28px;
+  }
+
+  .studyWorkspace .sentenceBox.studySentenceBox .sentenceBottomHintDesktop {
+    display: inline-flex;
+    align-items: center;
+  }
+}

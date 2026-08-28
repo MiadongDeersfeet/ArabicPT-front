@@ -211,38 +211,29 @@ a.primaryButton {
   padding: 18px 16px 24px;
 }
 
-.sentenceBox.studySentenceBox .sentenceBody,
+/* LibrarySetDetail preview — 기존 vh 카드 높이 유지 (학습 Card mode와 분리) */
 .librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceBody {
   padding: 0;
   min-height: 0;
 }
 
-.sentenceBox.studySentenceBox .sentenceFlipScene,
 .librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFlipScene {
   height: min(52vh, 460px);
   min-height: 220px;
   max-height: min(58vh, 500px);
 }
 
-.sentenceBox.studySentenceBox .sentenceFlipInner,
 .librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFlipInner {
   height: 100%;
   min-height: 100%;
 }
 
-.sentenceBox.studySentenceBox .sentenceFace,
 .librarySetPreviewSentenceWrap .sentenceBox.librarySetPreviewSentenceBox .sentenceFace {
   display: block;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 16px 14px 20px;
-}
-
-.sentenceBox.studySentenceBox .sentenceText {
-  margin: 0;
-  font-size: clamp(1.05rem, 3.6vw, 1.6rem);
-  line-height: 1.75;
 }
 
 .sentenceFlipScene {
@@ -257,7 +248,13 @@ a.primaryButton {
   width: 100%;
   min-height: 188px;
   transform-style: preserve-3d;
-  transition: transform 0.38s ease;
+  transition: transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sentenceFlipInner {
+    transition: none;
+  }
 }
 
 .sentenceFlipInner.isFlipped {
@@ -276,6 +273,18 @@ a.primaryButton {
 
 .sentenceFaceBack {
   transform: rotateY(180deg);
+}
+
+.sentenceTextViewport {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.sentenceTextContent {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .sentenceText {
@@ -448,13 +457,6 @@ a.primaryButton {
   margin-top: 16px;
 }
 
-.studyPageIntro {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
 .studyPageSection {
   display: flex;
   flex-direction: column;
@@ -478,30 +480,10 @@ a.primaryButton {
   line-height: 1.3;
 }
 
-.studyPageToolbar {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.studyViewModeTabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-}
-
 .studyBackToSetLink {
   display: inline-block;
   margin-top: 6px;
   font-size: 0.875rem;
-}
-
-.studyPageIntroTopRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
 }
 
 .studyDeckMetaRow {
@@ -565,16 +547,6 @@ a.primaryButton {
   cursor: pointer;
 }
 
-.studyWeakEmptyWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.studyWeakEmptyBackBtn {
-  align-self: flex-start;
-}
-
 .studyMarkBar {
   margin-top: 8px;
 }
@@ -599,24 +571,6 @@ a.primaryButton {
 .studyDeckPosition {
   margin: 0;
   color: #6b7280;
-}
-
-.studyPageIntro h2 {
-  margin: 0 0 6px;
-}
-
-.studyPageIntro p {
-  margin: 0;
-  color: #6b7280;
-}
-
-.studyPageIntroHeadingRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
 }
 
 .studySettingsWrap {
@@ -819,51 +773,6 @@ a.primaryButton {
   font-weight: 700;
   color: #111827;
   padding: 4px 8px;
-}
-
-.studyCountdown {
-  margin: 14px 0 16px;
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 1px solid #bbf7d0;
-  text-align: center;
-}
-
-.studyCountdownInner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  gap: 6px 10px;
-}
-
-.studyCountdownValue {
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(2.25rem, 8vw, 3rem);
-  font-weight: 800;
-  line-height: 1;
-  color: #047857;
-}
-
-.studyCountdownUnit {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #059669;
-}
-
-.studyCountdownLabel {
-  width: 100%;
-  font-size: 0.95rem;
-  color: #374151;
-  margin-top: 4px;
-}
-
-.studyCountdownHint {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #4b5563;
 }
 
 .studyMeaningCard {
@@ -2478,10 +2387,6 @@ a.primaryButton {
 }
 
 @media (max-width: 520px) {
-  .studyPageIntro {
-    gap: 10px;
-  }
-
   .studyPageHeader {
     flex-direction: row;
     align-items: flex-start;
@@ -2491,29 +2396,9 @@ a.primaryButton {
     font-size: 1.1rem;
   }
 
-  .studyPageToolbar {
-    justify-content: stretch;
-  }
-
-  .studyPageToolbar .countdownControlPanel {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
   .studyDeckMetaRow {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .studyPageIntro h2 {
-    margin-bottom: 2px;
-    font-size: 1.15rem;
-  }
-
-  .studyPageIntro p {
-    font-size: 0.82rem;
   }
 
   .countToggle {

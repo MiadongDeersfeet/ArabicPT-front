@@ -1,3 +1,26 @@
+function AudioIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M14 5v14l-6-4H4V9h4z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18 9a5 5 0 0 1 0 6M20.5 6.5a8.5 8.5 0 0 1 0 11"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 function SentenceBox({
   title,
   status = '학습 중',
@@ -14,10 +37,22 @@ function SentenceBox({
   audioButtonDisabled = false,
   onAudioPlay,
   className = '',
+  hideProgress = false,
+  hideStatus = false,
+  /** 'default' | 'compact' — Card mode uses compact hint */
+  hintVariant = 'default',
+  /**
+   * 'header' — TTS in sentenceHeader (Library/UiKit)
+   * 'overlay' — TTS absolute on card; header not used for TTS (Card study)
+   */
+  audioPlacement = 'header',
 }) {
   const canFlip = typeof onFlip === 'function'
   const resolvedFrontText = frontText ?? text
   const resolvedBackText = backText ?? text
+  const overlayAudio = audioPlacement === 'overlay'
+  const showHeaderMeta =
+    !hideStatus || !hideProgress || (showAudioButton && !overlayAudio)
 
   const handleKeyDown = (event) => {
     if (!canFlip) return
@@ -39,10 +74,41 @@ function SentenceBox({
     'sentenceBox',
     canFlip ? 'canFlip' : '',
     isFlipped ? 'isFlipped' : '',
+    hintVariant === 'compact' ? 'sentenceBox--hintCompact' : '',
+    overlayAudio ? 'sentenceBox--audioOverlay' : '',
     className,
   ]
     .filter(Boolean)
     .join(' ')
+
+  const audioButton = showAudioButton ? (
+    <button
+      type="button"
+      className={`sentenceAudioPlayButton${overlayAudio ? ' sentenceAudioPlayButton--overlay' : ''}`}
+      disabled={audioButtonDisabled}
+      onClick={handleAudioButtonClick}
+      aria-label="문장 오디오 재생"
+    >
+      <AudioIcon />
+    </button>
+  ) : null
+
+  const renderFace = (side) => {
+    const isFront = side === 'front'
+    const content = isFront ? resolvedFrontText : resolvedBackText
+    const textDir = (isFront ? frontDir : backDir) ?? dir
+    return (
+      <div className={`sentenceFace ${isFront ? 'sentenceFaceFront' : 'sentenceFaceBack'}`}>
+        <div className="sentenceTextViewport">
+          <div className="sentenceTextContent">
+            <p className="sentenceText" dir={textDir} lang={textDir === 'rtl' ? 'ar' : 'ko'}>
+              {content}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <article
@@ -54,65 +120,51 @@ function SentenceBox({
       tabIndex={canFlip ? 0 : undefined}
       aria-pressed={canFlip ? isFlipped : undefined}
     >
-      <div className="sentenceHeader">
-        <div className="sentenceStatus">
-          <span className="statusDot" />
-          <strong>{status}</strong>
+      {overlayAudio ? audioButton : null}
+
+      {showHeaderMeta ? (
+        <div className={`sentenceHeader${hideStatus && hideProgress ? ' sentenceHeader--audioOnly' : ''}`}>
+          {!hideStatus ? (
+            <div className="sentenceStatus">
+              <span className="statusDot" />
+              <strong>{status}</strong>
+            </div>
+          ) : (
+            <span className="sentenceHeaderSpacer" aria-hidden="true" />
+          )}
+          <div className="sentenceHeaderActions">
+            {!hideProgress ? <span className="sentenceProgress">{progress}</span> : null}
+            {!overlayAudio ? audioButton : null}
+          </div>
         </div>
-        <div className="sentenceHeaderActions">
-          <span className="sentenceProgress">{progress}</span>
-          {showAudioButton ? (
-            <button
-              type="button"
-              className="sentenceAudioPlayButton"
-              disabled={audioButtonDisabled}
-              onClick={handleAudioButtonClick}
-              aria-label="문장 오디오 재생"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M14 5v14l-6-4H4V9h4z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M18 9a5 5 0 0 1 0 6M20.5 6.5a8.5 8.5 0 0 1 0 11"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          ) : null}
-        </div>
-      </div>
+      ) : null}
 
       <div className="sentenceBody">
         <div className="sentenceFlipScene">
           <div className={`sentenceFlipInner${isFlipped ? ' isFlipped' : ''}`}>
-            <div className="sentenceFace sentenceFaceFront">
-              <p className="sentenceText" dir={frontDir ?? dir} lang={(frontDir ?? dir) === 'rtl' ? 'ar' : 'ko'}>
-                {resolvedFrontText}
-              </p>
-            </div>
-            <div className="sentenceFace sentenceFaceBack">
-              <p className="sentenceText" dir={backDir ?? dir} lang={(backDir ?? dir) === 'rtl' ? 'ar' : 'ko'}>
-                {resolvedBackText}
-              </p>
-            </div>
+            {renderFace('front')}
+            {renderFace('back')}
           </div>
         </div>
       </div>
 
       <div className="sentenceBottomBar">
-        <span>터치/클릭 또는</span>
-        <kbd>Space</kbd>
-        <span>로 뒤집기</span>
+        {hintVariant === 'compact' ? (
+          <>
+            <span className="sentenceBottomHintPrimary">
+              {isFlipped ? '탭하여 앞면 보기' : '탭하여 정답 확인'}
+            </span>
+            <span className="sentenceBottomHintDesktop">
+              <kbd>Space</kbd>
+            </span>
+          </>
+        ) : (
+          <>
+            <span>터치/클릭 또는</span>
+            <kbd>Space</kbd>
+            <span>로 뒤집기</span>
+          </>
+        )}
       </div>
     </article>
   )

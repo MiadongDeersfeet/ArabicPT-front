@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
 import RequireAuth from './components/auth/RequireAuth.jsx'
 import Layout from './components/layout/Layout.jsx'
+import StudyLayout from './components/layout/StudyLayout.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import AuthCallback from './pages/AuthCallback.jsx'
@@ -99,9 +100,9 @@ function App() {
       <Route
         path="/study/sets/:setId"
         element={
-          <Layout>
+          <StudyLayout>
             <SentenceStudy />
-          </Layout>
+          </StudyLayout>
         }
       />
       <Route
