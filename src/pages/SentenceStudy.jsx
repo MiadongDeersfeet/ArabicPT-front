@@ -5,7 +5,8 @@ import StudyEbookPanel from '../components/study/StudyEbookPanel.jsx'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { getSentencesBySet } from '../api/sentenceApi.js'
 import { getSentenceAudio } from '../api/audioApi.js'
-import { resumeCountdownAudio } from '../utils/countdownAudio.js'
+import { unlockStudyAudio } from '../utils/unlockStudyAudio.js'
+import { pauseSentenceMediaAudio, playSentenceMediaAudio } from '../utils/sentenceMediaAudio.js'
 import { useSentenceCountdown } from '../hooks/useSentenceCountdown.js'
 import { useLongPressAdjust } from '../hooks/useLongPressAdjust.js'
 import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
@@ -240,11 +241,23 @@ function SentenceStudy() {
 
   useEffect(() => {
     const unlock = () => {
-      resumeCountdownAudio()
+      void unlockStudyAudio()
     }
     window.addEventListener('pointerdown', unlock, { passive: true })
     return () => window.removeEventListener('pointerdown', unlock)
-  }, [setAllowCountdown])
+  }, [])
+
+  const onCountdownToggle = useCallback(
+    (event) => {
+      const enabled = event.target.checked
+      if (enabled) {
+        // 카운트다운 ON 제스처에서 Web Audio + TTS HTMLAudio unlock
+        void unlockStudyAudio()
+      }
+      handleCountdownToggle(event)
+    },
+    [handleCountdownToggle],
+  )
 
   useEffect(() => {
     if (!setIdValid) return
@@ -440,10 +453,8 @@ function SentenceStudy() {
       setEbookIndex(nextIndex)
       setShowBack(false)
       setFadeKey((k) => k + 1)
-      if (ebookAudioRef.current) {
-        ebookAudioRef.current.pause()
-        ebookAudioRef.current = null
-      }
+      pauseSentenceMediaAudio()
+      ebookAudioRef.current = null
     },
     [sentences.length],
   )
@@ -470,17 +481,10 @@ function SentenceStudy() {
     const entry = audioStateBySentenceId[sentenceId]
     const fullUrl = getFullAudioUrl(entry?.audioUrl)
     if (!fullUrl) return
-    try {
-      if (viewMode === 'ebook' && ebookAudioRef.current) {
-        ebookAudioRef.current.pause()
-      }
-      const audio = new Audio(fullUrl)
-      if (viewMode === 'ebook') {
-        ebookAudioRef.current = audio
-      }
-      await audio.play()
-    } catch (playError) {
-      console.error(playError)
+    // 공유 Audio 인스턴스 재사용 — 모바일에서 제스처 unlock 후 자동 재생에 필요
+    const audio = await playSentenceMediaAudio(fullUrl)
+    if (viewMode === 'ebook') {
+      ebookAudioRef.current = audio
     }
   }, [audioStateBySentenceId, focusSentence?.sentenceId, getFullAudioUrl, viewMode])
 
@@ -552,7 +556,7 @@ function SentenceStudy() {
       isCountdownRunning={isCountdownRunning}
       minSeconds={MIN_COUNTDOWN_SECONDS}
       maxSeconds={MAX_COUNTDOWN_SECONDS}
-      onCountdownToggle={handleCountdownToggle}
+      onCountdownToggle={onCountdownToggle}
       onCountdownSecondsChange={handleCountdownSecondsChange}
       onStepClick={handleStepButtonClick}
       onLongPressStart={startLongPressAdjust}

@@ -1,6 +1,14 @@
 let audioContext = null
 
-function getContext() {
+/**
+ * AudioContext는 user gesture 경로(resumeCountdownAudio)에서만 생성한다.
+ * 타이머에서 playCountdownTick → create 하면 Chrome 모바일 autoplay 경고가 난다.
+ */
+function getExistingContext() {
+  return audioContext
+}
+
+function ensureContext() {
   if (typeof window === 'undefined') return null
   if (!audioContext) {
     const Ctx = window.AudioContext || window.webkitAudioContext
@@ -10,17 +18,19 @@ function getContext() {
   return audioContext
 }
 
+/** 제스처 안에서 호출: create + resume */
 export function resumeCountdownAudio() {
-  const ctx = getContext()
-  if (ctx?.state === 'suspended') {
-    return ctx.resume()
+  const ctx = ensureContext()
+  if (!ctx) return Promise.resolve()
+  if (ctx.state === 'suspended') {
+    return ctx.resume().catch(() => {})
   }
   return Promise.resolve()
 }
 
 function beep({ frequency, duration = 0.07, volume = 0.07 }) {
-  const ctx = getContext()
-  if (!ctx) return
+  const ctx = getExistingContext()
+  if (!ctx || ctx.state !== 'running') return
   const t0 = ctx.currentTime
   const osc = ctx.createOscillator()
   const gain = ctx.createGain()
