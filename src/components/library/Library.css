@@ -1,0 +1,542 @@
+/* Library — Productivity Editorial (scoped). Do not alter global .introCard/.cardGrid. */
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.libPage {
+  padding: 28px 0 72px;
+}
+
+.libPageInner {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1180px;
+}
+
+/* Header */
+.libHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.libHeaderCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 36rem;
+}
+
+.libHeaderTitle {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.libHeaderLead {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.libHeaderCreate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 2px;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: inset 0 -1px 0 transparent;
+  transition: color 160ms ease, box-shadow 160ms ease;
+  flex: none;
+}
+
+.libHeaderCreate:hover {
+  color: var(--color-primary-hover);
+  box-shadow: inset 0 -1px 0 currentColor;
+}
+
+.libHeaderCreate:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Type nav */
+.libTypeNav {
+  display: flex;
+  gap: 4px 28px;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.12);
+}
+
+.libTypeTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 2px 10px;
+  color: rgba(23, 23, 23, 0.45);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.libTypeTab:hover {
+  color: var(--color-text);
+}
+
+.libTypeTab.isActive {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.libTypeTab.isActive::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+.libTypeTab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Toolbar */
+.libToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.libToolbarSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.libSearchInput {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.18);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+
+.libSearchInput::placeholder {
+  color: rgba(23, 23, 23, 0.4);
+}
+
+.libSearchInput:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+.libSearchClear {
+  flex: none;
+  min-height: 40px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.libToolbarFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.libFilterField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.libFilterLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(23, 23, 23, 0.4);
+}
+
+.libSelect {
+  min-height: 40px;
+  min-width: 9.5rem;
+  max-width: 100%;
+  padding: 6px 28px 6px 0;
+  border: none;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.16);
+  border-radius: 0;
+  background: transparent
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%230F5F46' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")
+    no-repeat right 4px center;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+
+.libSelect:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary);
+}
+
+.libFolderManage {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  margin-inline-start: auto;
+  color: rgba(23, 23, 23, 0.5);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.libFolderManage:hover {
+  color: var(--color-primary);
+}
+
+.libFolderManage:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* List */
+.libListSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.libListHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+
+.libListHeading {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.libListCount {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(23, 23, 23, 0.4);
+}
+
+.libList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(15, 95, 70, 0.12);
+}
+
+.libRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px 14px;
+  align-items: start;
+  min-height: 72px;
+  padding: 18px 2px;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+
+.libRow:hover {
+  background: rgba(237, 246, 241, 0.55);
+}
+
+.libRow:hover .libRowTitle {
+  color: var(--color-primary);
+}
+
+.libRow:hover .libRowGo {
+  transform: translate(2px, -1px);
+  color: var(--color-primary);
+}
+
+.libRow:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.libRowIndex {
+  padding-top: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(23, 23, 23, 0.32);
+}
+
+.libRowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.libRowTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--color-text);
+  word-break: keep-all;
+  transition: color 160ms ease;
+}
+
+.libRowDesc {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.libRowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: rgba(23, 23, 23, 0.48);
+  word-break: keep-all;
+}
+
+.libRowMetaSep {
+  opacity: 0.7;
+}
+
+.libRowAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.libRowDate {
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(23, 23, 23, 0.4);
+  white-space: nowrap;
+}
+
+.libRowGo {
+  color: rgba(23, 23, 23, 0.3);
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+/* Status / empty */
+.libStatus {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.libStatusBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.libTextAction {
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.libEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 28rem;
+  padding: 12px 0 8px;
+}
+
+.libEmptyTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.libEmptyText {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.libEmptyAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: inset 0 -1px 0 rgba(15, 95, 70, 0.25);
+}
+
+.libEmptyAction--button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.libEmptyAction:hover {
+  color: var(--color-primary-hover);
+}
+
+.libEmptyAction:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (min-width: 768px) {
+  .libPage {
+    padding: 36px 0 88px;
+  }
+
+  .libPageInner {
+    gap: 32px;
+  }
+
+  .libToolbar {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px 28px;
+  }
+
+  .libToolbarSearch {
+    flex: 1 1 280px;
+    max-width: 420px;
+  }
+
+  .libToolbarFilters {
+    flex: none;
+  }
+
+  .libRow {
+    min-height: 80px;
+    padding: 20px 4px;
+    align-items: center;
+  }
+
+  .libRowDesc {
+    -webkit-line-clamp: 1;
+  }
+
+  .libRowAside {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .libHeaderTitle {
+    font-size: clamp(1.95rem, 2.4vw, 2.25rem);
+  }
+
+  .libRow {
+    min-height: 84px;
+    gap: 16px 20px;
+  }
+
+  .libRowTitle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .libHeaderCreate,
+  .libTypeTab,
+  .libRow,
+  .libRowTitle,
+  .libRowGo,
+  .libFolderManage,
+  .libSearchInput {
+    transition: none;
+  }
+
+  .libRow:hover .libRowGo {
+    transform: none;
+  }
+}

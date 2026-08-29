@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import StudySessionHeader from '../components/study/StudySessionHeader.jsx'
 import StudyCardPanel from '../components/study/StudyCardPanel.jsx'
-import StudyEbookPanel from '../components/study/StudyEbookPanel.jsx'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { getSentencesBySet } from '../api/sentenceApi.js'
 import { getSentenceAudio } from '../api/audioApi.js'
 import { unlockStudyAudio } from '../utils/unlockStudyAudio.js'
-import { pauseSentenceMediaAudio, playSentenceMediaAudio } from '../utils/sentenceMediaAudio.js'
+import { playSentenceMediaAudio } from '../utils/sentenceMediaAudio.js'
 import { useSentenceCountdown } from '../hooks/useSentenceCountdown.js'
 import { useLongPressAdjust } from '../hooks/useLongPressAdjust.js'
 import { readCardSideReversed, persistCardSideReversed, resolveCardSides } from '../utils/sentenceCardSides.js'
@@ -24,30 +23,21 @@ const MAX_COUNTDOWN_SECONDS = 20
 const LONG_PRESS_DELAY_MS = 350
 const LONG_PRESS_INTERVAL_MS = 170
 const LONG_PRESS_STEP_SECONDS = 5
-const VIEW_MODE_STORAGE_KEY = 'arabicpt.study.viewMode'
 /** UI-only: mark → next card motion (ms) */
 const CARD_EXIT_MS = 90
 const CARD_ENTER_MS = 160
-
-function readInitialViewMode(searchParams) {
-  if (searchParams.get('mode') === 'ebook') return 'ebook'
-  try {
-    const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY)
-    if (saved === 'ebook' || saved === 'card') return saved
-  } catch {
-    /* ignore */
-  }
-  return 'card'
-}
 
 /** 세션 queue snapshot — marks 변경과 무관한 고정 목록 */
 function buildStudyQueue(list) {
   return Array.isArray(list) ? [...list] : []
 }
 
+/**
+ * /study/sets/:setId — 문장 카드 학습 전용 (Ebook presentation 없음).
+ * Ebook 콘텐츠는 ParagraphSet / ParagraphReader 영역.
+ */
 function SentenceStudy() {
   const { setId } = useParams()
-  const [searchParams] = useSearchParams()
   const setIdNum = Number(setId)
   const setIdValid = Number.isInteger(setIdNum) && setIdNum > 0
 
@@ -64,17 +54,10 @@ function SentenceStudy() {
   const [sessionMode, setSessionMode] = useState('all') // 'all' | 'weak'
   const [sessionCompleted, setSessionCompleted] = useState(false)
 
-  // —— ebook index (분리: Card session과 공유하지 않음) ——
-  const [ebookIndex, setEbookIndex] = useState(0)
-
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardSideReversed, setCardSideReversed] = useState(readCardSideReversed)
   const [audioStateBySentenceId, setAudioStateBySentenceId] = useState({})
-  const [viewMode, setViewMode] = useState(() => readInitialViewMode(searchParams))
-  const [showBack, setShowBack] = useState(false)
-  const [fadeKey, setFadeKey] = useState(0)
   const previousIsFlippedRef = useRef(false)
-  const ebookAudioRef = useRef(null)
   const sessionStartedForSetRef = useRef(null)
   /** UI-only mark → card motion (session logic과 분리) */
   const [cardMotion, setCardMotion] = useState('idle') // idle | exit | enter
@@ -118,9 +101,7 @@ function SentenceStudy() {
 
   const cardSentence =
     !sessionCompleted && studyQueue.length > 0 ? (studyQueue[sessionIndex] ?? null) : null
-  const ebookSentence = sentences.length > 0 ? (sentences[ebookIndex] ?? null) : null
-  const focusSentence = viewMode === 'ebook' ? ebookSentence : cardSentence
-  const cardSides = resolveCardSides(focusSentence, cardSideReversed)
+  const cardSides = resolveCardSides(cardSentence, cardSideReversed)
 
   const progressCurrent =
     studyQueue.length === 0
@@ -251,7 +232,6 @@ function SentenceStudy() {
     (event) => {
       const enabled = event.target.checked
       if (enabled) {
-        // 카운트다운 ON 제스처에서 Web Audio + TTS HTMLAudio unlock
         void unlockStudyAudio()
       }
       handleCountdownToggle(event)
@@ -276,13 +256,11 @@ function SentenceStudy() {
       setStudyQueue([])
       setSessionCompleted(false)
       setSessionIndex(0)
-      setEbookIndex(0)
       return
     }
     if (sessionStartedForSetRef.current === setIdNum) return
     sessionStartedForSetRef.current = setIdNum
     startFullSession(sentences)
-    setEbookIndex(0)
   }, [setIdNum, setIdValid, loading, error, sentences, startFullSession])
 
   useEffect(() => {
@@ -423,50 +401,6 @@ function SentenceStudy() {
     })
   }, [sessionCompleted, isCardTransitioning, setAllowCountdown])
 
-  const handleViewModeChange = useCallback(
-    (mode) => {
-      setViewMode(mode)
-      try {
-        localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode)
-      } catch {
-        /* ignore */
-      }
-      if (mode === 'ebook') {
-        setAllowCountdown(false)
-        setShowBack(false)
-        setFadeKey((k) => k + 1)
-      } else {
-        setIsFlipped(false)
-      }
-    },
-    [setAllowCountdown],
-  )
-
-  const handleEbookToggleSide = useCallback(() => {
-    setShowBack((prev) => !prev)
-    setFadeKey((k) => k + 1)
-  }, [])
-
-  const goToEbookPage = useCallback(
-    (nextIndex) => {
-      if (nextIndex < 0 || nextIndex >= sentences.length) return
-      setEbookIndex(nextIndex)
-      setShowBack(false)
-      setFadeKey((k) => k + 1)
-      pauseSentenceMediaAudio()
-      ebookAudioRef.current = null
-    },
-    [sentences.length],
-  )
-
-  const goEbookPrev = useCallback(() => {
-    goToEbookPage(ebookIndex - 1)
-  }, [ebookIndex, goToEbookPage])
-
-  const goEbookNext = useCallback(() => {
-    goToEbookPage(ebookIndex + 1)
-  }, [ebookIndex, goToEbookPage])
-
   const getFullAudioUrl = useCallback((audioUrl) => {
     if (!audioUrl) return ''
     if (audioUrl.startsWith('http://') || audioUrl.startsWith('https://')) {
@@ -476,17 +410,13 @@ function SentenceStudy() {
   }, [])
 
   const playCurrentSentenceAudio = useCallback(async () => {
-    const sentenceId = focusSentence?.sentenceId
+    const sentenceId = cardSentence?.sentenceId
     if (!sentenceId) return
     const entry = audioStateBySentenceId[sentenceId]
     const fullUrl = getFullAudioUrl(entry?.audioUrl)
     if (!fullUrl) return
-    // 공유 Audio 인스턴스 재사용 — 모바일에서 제스처 unlock 후 자동 재생에 필요
-    const audio = await playSentenceMediaAudio(fullUrl)
-    if (viewMode === 'ebook') {
-      ebookAudioRef.current = audio
-    }
-  }, [audioStateBySentenceId, focusSentence?.sentenceId, getFullAudioUrl, viewMode])
+    await playSentenceMediaAudio(fullUrl)
+  }, [audioStateBySentenceId, cardSentence?.sentenceId, getFullAudioUrl])
 
   useEffect(() => {
     const wasFlipped = previousIsFlippedRef.current
@@ -519,9 +449,7 @@ function SentenceStudy() {
 
       if (event.code === 'Space') {
         event.preventDefault()
-        if (viewMode === 'ebook') {
-          handleEbookToggleSide()
-        } else if (!sessionCompleted) {
+        if (!sessionCompleted) {
           flipCard()
         }
       }
@@ -529,7 +457,7 @@ function SentenceStudy() {
 
     window.addEventListener('keydown', handleSpaceFlip)
     return () => window.removeEventListener('keydown', handleSpaceFlip)
-  }, [flipCard, handleEbookToggleSide, viewMode, sessionCompleted])
+  }, [flipCard, sessionCompleted])
 
   if (!setIdValid) {
     return (
@@ -545,109 +473,72 @@ function SentenceStudy() {
     )
   }
 
-  const sessionHeader = (
-    <StudySessionHeader
-      setIdNum={setIdNum}
-      cardSideReversed={cardSideReversed}
-      onToggleCardSide={toggleCardSideOrder}
-      showCountdown={viewMode === 'card' && !sessionCompleted}
-      countdownEnabled={countdownEnabled}
-      countdownSeconds={countdownSeconds}
-      isCountdownRunning={isCountdownRunning}
-      minSeconds={MIN_COUNTDOWN_SECONDS}
-      maxSeconds={MAX_COUNTDOWN_SECONDS}
-      onCountdownToggle={onCountdownToggle}
-      onCountdownSecondsChange={handleCountdownSecondsChange}
-      onStepClick={handleStepButtonClick}
-      onLongPressStart={startLongPressAdjust}
-      onLongPressStop={stopLongPressAdjust}
-    />
-  )
-
-  /* —— Card mode —— */
-  if (viewMode === 'card') {
-    return (
-      <>
-        {sessionHeader}
-        <section className="container studyPageSection studyPageSection--session">
-          <StudyCardPanel
-            progress={{
-              current: progressCurrent,
-              total: studyQueue.length,
-              knownCount: markStats.known,
-              unknownCount: markStats.unknown,
-              weakOnlyActive: sessionMode === 'weak',
-              weakOnlyDisabled: loading || sessionCompleted || remainingUnknownCount === 0,
-              progressCompact: sessionCompleted,
-              pulseStat: statPulse,
-            }}
-            countdown={{
-              showLive: countdownEnabled && !isFlipped && allowCountdown,
-              secondsLeft,
-              totalSeconds: countdownSeconds,
-            }}
-            session={{
-              completed: sessionCompleted,
-              completionTotal: sessionResultStats.total,
-              completionKnown: sessionResultStats.known,
-              completionUnknown: sessionResultStats.unknown,
-              remainingUnknownCount,
-              setId: setIdNum,
-            }}
-            card={{
-              loading,
-              error,
-              sentencesEmpty: sentences.length === 0,
-              weakQueueEmpty: sessionMode === 'weak' && studyQueue.length === 0,
-              hasSentence: Boolean(cardSentence),
-              frontText: cardSides.frontText,
-              backText: cardSides.backText,
-              frontDir: cardSides.frontDir,
-              backDir: cardSides.backDir,
-              isFlipped,
-              hasAudio: Boolean(audioStateBySentenceId[cardSentence?.sentenceId]?.audioUrl),
-              cardMotion,
-              showMarkBar: !loading && !error && studyQueue.length > 0,
-              markBarDisabled: isCardTransitioning,
-            }}
-            onViewModeChange={handleViewModeChange}
-            onWeakChange={handleWeakChipChange}
-            onFlip={flipCard}
-            onPlayAudio={playCurrentSentenceAudio}
-            onMarkKnown={() => requestMark('known')}
-            onMarkUnknown={() => requestMark('unknown')}
-            onRestartWeak={() => startWeakSession()}
-            onRestartAll={() => startFullSession()}
-          />
-        </section>
-      </>
-    )
-  }
-
-  /* —— Ebook mode —— */
-  const ebookSides = resolveCardSides(ebookSentence, cardSideReversed)
-
   return (
     <>
-      {sessionHeader}
+      <StudySessionHeader
+        setIdNum={setIdNum}
+        cardSideReversed={cardSideReversed}
+        onToggleCardSide={toggleCardSideOrder}
+        showCountdown={!sessionCompleted}
+        countdownEnabled={countdownEnabled}
+        countdownSeconds={countdownSeconds}
+        isCountdownRunning={isCountdownRunning}
+        minSeconds={MIN_COUNTDOWN_SECONDS}
+        maxSeconds={MAX_COUNTDOWN_SECONDS}
+        onCountdownToggle={onCountdownToggle}
+        onCountdownSecondsChange={handleCountdownSecondsChange}
+        onStepClick={handleStepButtonClick}
+        onLongPressStart={startLongPressAdjust}
+        onLongPressStop={stopLongPressAdjust}
+      />
       <section className="container studyPageSection studyPageSection--session">
-        <StudyEbookPanel
-          loading={loading}
-          error={error}
-          totalPages={sentences.length}
-          currentIndex={ebookIndex}
-          frontText={ebookSides.frontText}
-          backText={ebookSides.backText}
-          frontDir={ebookSides.frontDir}
-          backDir={ebookSides.backDir}
-          showBack={showBack}
-          fadeKey={fadeKey}
-          hasAudio={Boolean(audioStateBySentenceId[ebookSentence?.sentenceId]?.audioUrl)}
-          onToggleSide={handleEbookToggleSide}
-          onPrev={goEbookPrev}
-          onNext={goEbookNext}
+        <StudyCardPanel
+          progress={{
+            current: progressCurrent,
+            total: studyQueue.length,
+            knownCount: markStats.known,
+            unknownCount: markStats.unknown,
+            weakOnlyActive: sessionMode === 'weak',
+            weakOnlyDisabled: loading || sessionCompleted || remainingUnknownCount === 0,
+            progressCompact: sessionCompleted,
+            pulseStat: statPulse,
+          }}
+          countdown={{
+            showLive: countdownEnabled && !isFlipped && allowCountdown,
+            secondsLeft,
+            totalSeconds: countdownSeconds,
+          }}
+          session={{
+            completed: sessionCompleted,
+            completionTotal: sessionResultStats.total,
+            completionKnown: sessionResultStats.known,
+            completionUnknown: sessionResultStats.unknown,
+            remainingUnknownCount,
+            setId: setIdNum,
+          }}
+          card={{
+            loading,
+            error,
+            sentencesEmpty: sentences.length === 0,
+            weakQueueEmpty: sessionMode === 'weak' && studyQueue.length === 0,
+            hasSentence: Boolean(cardSentence),
+            frontText: cardSides.frontText,
+            backText: cardSides.backText,
+            frontDir: cardSides.frontDir,
+            backDir: cardSides.backDir,
+            isFlipped,
+            hasAudio: Boolean(audioStateBySentenceId[cardSentence?.sentenceId]?.audioUrl),
+            cardMotion,
+            showMarkBar: !loading && !error && studyQueue.length > 0,
+            markBarDisabled: isCardTransitioning,
+          }}
+          onWeakChange={handleWeakChipChange}
+          onFlip={flipCard}
           onPlayAudio={playCurrentSentenceAudio}
-          onViewModeChange={handleViewModeChange}
+          onMarkKnown={() => requestMark('known')}
+          onMarkUnknown={() => requestMark('unknown')}
+          onRestartWeak={() => startWeakSession()}
+          onRestartAll={() => startFullSession()}
         />
       </section>
     </>

@@ -1,18 +1,17 @@
 import SentenceBox from '../ui/SentenceBox.jsx'
 import StudyMarkBar from '../ui/StudyMarkBar.jsx'
-import StudyCardHeader from './StudyCardHeader.jsx'
+import StudyProgress from './StudyProgress.jsx'
 import StudyCompletion from './StudyCompletion.jsx'
 import StudyCountdownLive from './StudyCountdownLive.jsx'
 
 /**
- * Card mode presentation — session/mark/countdown/TTS ownership은 SentenceStudy(부모)
+ * Card study presentation — session/mark/countdown/TTS ownership은 SentenceStudy(부모)
  */
 function StudyCardPanel({
   progress,
   countdown,
   session,
   card,
-  onViewModeChange,
   onWeakChange,
   onFlip,
   onPlayAudio,
@@ -32,11 +31,7 @@ function StudyCardPanel({
     pulseStat,
   } = progress
 
-  const {
-    showLive,
-    secondsLeft,
-    totalSeconds,
-  } = countdown
+  const { showLive, secondsLeft, totalSeconds } = countdown
 
   const {
     completed,
@@ -146,7 +141,7 @@ function StudyCardPanel({
 
   return (
     <div className="studyWorkspace">
-      <StudyCardHeader
+      <StudyProgress
         current={current}
         total={total}
         known={knownCount}
@@ -154,9 +149,7 @@ function StudyCardPanel({
         weakOnly={weakOnlyActive}
         onWeakOnlyChange={onWeakChange}
         weakOnlyDisabled={weakOnlyDisabled}
-        viewMode="card"
-        onViewModeChange={onViewModeChange}
-        progressCompact={progressCompact}
+        compact={progressCompact}
         pulseStat={pulseStat}
       />
 
