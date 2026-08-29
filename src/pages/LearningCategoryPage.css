@@ -1,0 +1,218 @@
+.catPage {
+  padding: 24px 0 72px;
+}
+
+.catPageInner {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  max-width: 920px;
+}
+
+.catBack {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 40px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.catBack:hover {
+  color: var(--color-primary);
+}
+
+.catBack:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.catHero {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+.catHeroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 36rem;
+}
+
+.catHeroMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(23, 23, 23, 0.4);
+}
+
+.catHeroNum {
+  color: var(--color-primary);
+}
+
+.catHeroEyebrow {
+  letter-spacing: 0.12em;
+}
+
+.catHeroTitle {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 2.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catHeroArabic {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(15, 95, 70, 0.55);
+}
+
+.catHeroLead {
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.catHeroLeadLine {
+  display: block;
+}
+
+.catHeroVisual {
+  display: none;
+  color: var(--color-primary);
+}
+
+.catHeroVisual .learnCatMotif {
+  width: 120px;
+  height: 72px;
+}
+
+.catPage--sage .catHero {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+}
+
+.catPage--sage .catHeroVisual {
+  padding: 16px;
+  border-radius: 14px;
+  background: #edf6f1;
+}
+
+.catPage--white .catHeroArabic {
+  color: rgba(15, 95, 70, 0.45);
+}
+
+.catPage--paper .catHero {
+  padding: 8px 0 16px;
+  background:
+    linear-gradient(180deg, transparent, rgba(250, 249, 246, 0.8)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 11px,
+      rgba(15, 95, 70, 0.03) 11px,
+      rgba(15, 95, 70, 0.03) 12px
+    );
+}
+
+.catPage--contrast .catHeroTitle {
+  color: #0f2f24;
+}
+
+.catPage--contrast .catHeroArabic {
+  color: rgba(15, 95, 70, 0.7);
+}
+
+.catPoints {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.catPointsTitle {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catPointsList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(15, 95, 70, 0.12);
+}
+
+.catPointsList li {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catPointsList li::before {
+  content: '·';
+  margin-inline-end: 10px;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+@media (min-width: 768px) {
+  .catPage {
+    padding: 32px 0 96px;
+  }
+
+  .catPageInner {
+    gap: 56px;
+  }
+
+  .catHero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .catHeroVisual {
+    display: block;
+  }
+
+  .catPointsList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 28px;
+  }
+}
+
+@media (min-width: 900px) {
+  .catHeroTitle {
+    font-size: clamp(2.4rem, 3.4vw, 3.1rem);
+  }
+}

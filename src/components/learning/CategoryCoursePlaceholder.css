@@ -1,0 +1,59 @@
+.catCourse {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.catCourseHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.catCourseTitle {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catCourseStatus {
+  flex: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(15, 95, 70, 0.7);
+}
+
+.catCourseBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 40rem;
+  padding: 22px 0 8px;
+  border-top: 1px solid rgba(15, 95, 70, 0.12);
+}
+
+.catCourseLead {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catCourseText {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.catCourseSlot {
+  display: none;
+}

@@ -1,0 +1,236 @@
+.learnCatalog {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.learnCatalogHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 36rem;
+}
+
+.learnCatalogTitle {
+  margin: 0;
+  font-size: clamp(1.45rem, 3.2vw, 1.95rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.learnCatalogLead {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.learnCatalogShell {
+  border-block: 1px solid rgba(15, 95, 70, 0.14);
+}
+
+.learnCatalogGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.learnCatCell {
+  border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+}
+
+.learnCatCell:last-child {
+  border-bottom: none;
+}
+
+.learnCatModule {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 28px 2px 32px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 170ms ease;
+}
+
+.learnCatModule:hover .learnCatCta {
+  color: var(--color-primary-hover);
+  box-shadow: inset 0 -1px 0 currentColor;
+}
+
+.learnCatModule:hover .learnCatCtaArrow {
+  transform: translate(3px, -2px);
+}
+
+.learnCatModule:hover .learnCatMotifWrap {
+  transform: translateY(-2px);
+}
+
+.learnCatModule:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.learnCatTop {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.learnCatNum {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(23, 23, 23, 0.35);
+}
+
+.learnCatMotifWrap {
+  display: block;
+  color: var(--color-primary);
+  flex: none;
+  transition: transform 180ms ease;
+}
+
+.learnCatMotif {
+  display: block;
+  width: 64px;
+  height: 48px;
+}
+
+.learnCatTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.learnCatArabic {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(15, 95, 70, 0.72);
+}
+
+.learnCatDesc {
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 28rem;
+  font-size: 0.96rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.learnCatDescLine {
+  display: block;
+}
+
+.learnCatCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  min-height: 36px;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: inset 0 -1px 0 transparent;
+  transition: color 170ms ease, box-shadow 170ms ease;
+}
+
+.learnCatCtaArrow {
+  display: inline-block;
+  transition: transform 170ms ease;
+}
+
+/* Desktop: one catalog system, 2×2 editorial modules */
+@media (min-width: 768px) {
+  .learnCatalogTitle {
+    font-size: clamp(1.75rem, 2.4vw, 2rem);
+  }
+
+  .learnCatalogShell {
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .learnCatalogGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .learnCatCell {
+    border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+  }
+
+  .learnCatCell:nth-child(odd) {
+    border-inline-end: 1px solid rgba(15, 95, 70, 0.1);
+  }
+
+  .learnCatCell:nth-child(n + 3) {
+    border-bottom: none;
+  }
+
+  .learnCatModule {
+    min-height: 300px;
+    padding: 28px 28px 26px;
+    gap: 10px;
+  }
+
+  .learnCatMotif {
+    width: 80px;
+    height: 60px;
+  }
+
+  .learnCatTitle {
+    font-size: 1.55rem;
+  }
+
+  .learnCatArabic {
+    font-size: 1.15rem;
+    color: rgba(15, 95, 70, 0.75);
+  }
+
+  .learnCatDesc {
+    font-size: 0.98rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .learnCatModule {
+    min-height: 320px;
+    padding: 32px 32px 28px;
+  }
+
+  .learnCatMotif {
+    width: 88px;
+    height: 66px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learnCatModule,
+  .learnCatCta,
+  .learnCatCtaArrow,
+  .learnCatMotifWrap {
+    transition: none;
+  }
+
+  .learnCatModule:hover .learnCatCtaArrow,
+  .learnCatModule:hover .learnCatMotifWrap {
+    transform: none;
+  }
+}

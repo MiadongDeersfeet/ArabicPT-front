@@ -6,6 +6,7 @@ import Layout from './components/layout/Layout.jsx'
 import StudyLayout from './components/layout/StudyLayout.jsx'
 import Home from './pages/Home.jsx'
 import Learn from './pages/Learn.jsx'
+import LearningCategoryPage from './pages/LearningCategoryPage.jsx'
 import Login from './pages/Login.jsx'
 import AuthCallback from './pages/AuthCallback.jsx'
 import Library from './pages/Library.jsx'
@@ -42,6 +43,46 @@ function App() {
           <Layout>
             <RequireAuth>
               <Learn />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/learn/grammar"
+        element={
+          <Layout>
+            <RequireAuth>
+              <LearningCategoryPage slug="grammar" />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/learn/conversation"
+        element={
+          <Layout>
+            <RequireAuth>
+              <LearningCategoryPage slug="conversation" />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/learn/vocabulary"
+        element={
+          <Layout>
+            <RequireAuth>
+              <LearningCategoryPage slug="vocabulary" />
+            </RequireAuth>
+          </Layout>
+        }
+      />
+      <Route
+        path="/learn/reading-listening"
+        element={
+          <Layout>
+            <RequireAuth>
+              <LearningCategoryPage slug="reading-listening" />
             </RequireAuth>
           </Layout>
         }

@@ -1,0 +1,97 @@
+.catMiniNav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.catMiniNavTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.catMiniNavList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(15, 95, 70, 0.12);
+}
+
+.catMiniNavItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 2px;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.1);
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+
+a.catMiniNavItem:hover {
+  background: rgba(15, 95, 70, 0.03);
+}
+
+a.catMiniNavItem:hover .catMiniNavLabel {
+  color: var(--color-primary);
+}
+
+a.catMiniNavItem:hover .catMiniNavGo {
+  transform: translate(2px, -1px);
+  color: var(--color-primary);
+}
+
+.catMiniNavItem.isActive {
+  opacity: 0.55;
+}
+
+.catMiniNavNum {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(23, 23, 23, 0.35);
+}
+
+.catMiniNavLabel {
+  font-size: 0.95rem;
+  font-weight: 700;
+  word-break: keep-all;
+  transition: color 160ms ease;
+}
+
+.catMiniNavGo {
+  color: rgba(23, 23, 23, 0.3);
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+@media (min-width: 768px) {
+  .catMiniNavList {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 16px;
+    border-top: none;
+  }
+
+  .catMiniNavItem {
+    border-bottom: 1px solid rgba(15, 95, 70, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catMiniNavItem,
+  .catMiniNavGo,
+  .catMiniNavLabel {
+    transition: none;
+  }
+
+  a.catMiniNavItem:hover .catMiniNavGo {
+    transform: none;
+  }
+}

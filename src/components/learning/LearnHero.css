@@ -1,0 +1,174 @@
+.learnHero {
+  display: grid;
+  gap: 28px;
+  align-items: end;
+}
+
+.learnHeroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 36rem;
+}
+
+.learnHeroEyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-primary);
+}
+
+.learnHeroTitle {
+  margin: 0;
+  font-size: clamp(2.2rem, 8vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--color-text);
+  word-break: keep-all;
+  overflow-wrap: normal;
+  line-break: strict;
+}
+
+.learnHeroPhrase {
+  white-space: nowrap;
+}
+
+.learnHeroLead {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.learnHeroVisual {
+  display: none;
+}
+
+/*
+  Editorial Arabic composition — aligned 2×2 with hairline connectors:
+
+  قواعد ───────── تعبير
+        │
+  قراءة ───────── كلمات
+*/
+.learnHeroCompose {
+  display: grid;
+  grid-template-columns: auto minmax(48px, 1fr) auto;
+  grid-template-rows: auto minmax(36px, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  column-gap: 0;
+  row-gap: 0;
+  width: 100%;
+  max-width: 400px;
+  min-height: 0;
+  margin-inline-start: auto;
+  padding-block: 8px;
+}
+
+.learnHeroWord {
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.learnHeroWord--a {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  font-size: clamp(1.4rem, 1.85vw, 1.75rem);
+  color: rgba(15, 95, 70, 0.82);
+}
+
+.learnHeroWord--b {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  font-size: clamp(1.25rem, 1.65vw, 1.55rem);
+  color: rgba(15, 95, 70, 0.58);
+}
+
+.learnHeroWord--c {
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: start;
+  font-size: clamp(1.3rem, 1.7vw, 1.6rem);
+  color: rgba(15, 95, 70, 0.7);
+}
+
+.learnHeroWord--d {
+  grid-column: 3;
+  grid-row: 3;
+  justify-self: end;
+  font-size: clamp(1.35rem, 1.75vw, 1.65rem);
+  color: rgba(15, 95, 70, 0.76);
+}
+
+.learnHeroLine {
+  pointer-events: none;
+  background: rgba(15, 95, 70, 0.2);
+}
+
+.learnHeroLine--h1 {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: 1px;
+  align-self: center;
+}
+
+.learnHeroLine--h2 {
+  grid-column: 2;
+  grid-row: 3;
+  width: 100%;
+  height: 1px;
+  align-self: center;
+}
+
+.learnHeroLine--v {
+  grid-column: 2;
+  grid-row: 2;
+  width: 1px;
+  height: 100%;
+  min-height: 40px;
+  justify-self: center;
+  align-self: stretch;
+}
+
+@media (min-width: 900px) {
+  .learnHero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 48px;
+    align-items: center;
+  }
+
+  .learnHeroTitle {
+    font-size: clamp(2.6rem, 3.8vw, 3.8rem);
+  }
+
+  .learnHeroVisual {
+    display: block;
+  }
+
+  .learnHeroCompose {
+    min-height: 168px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .learnHeroCompose {
+    max-width: 440px;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 420px) {
+  .learnHeroPhrase {
+    white-space: normal;
+  }
+}
