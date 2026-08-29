@@ -361,3 +361,114 @@
     display: none;
   }
 }
+
+/* =========================================================
+   App header (authenticated) — BrandLogo 내부는 변경하지 않음
+   PublicHeader 스타일과 분리하기 위해 --app 스코프만 사용
+   ========================================================= */
+
+.siteHeader--app {
+  background: #faf9f6;
+  border-bottom: 1px solid rgba(15, 95, 70, 0.07);
+  box-shadow: none;
+}
+
+.siteHeaderInner--app {
+  min-height: 60px;
+}
+
+@media (min-width: 768px) {
+  .siteHeaderInner--app {
+    min-height: 66px;
+  }
+}
+
+.headerNav--app {
+  gap: 8px;
+}
+
+.headerNavLink--app {
+  position: relative;
+  padding: 0 10px;
+  border-radius: 0;
+  background: transparent;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.headerNavLink--app:hover {
+  color: var(--color-primary);
+  background: transparent;
+}
+
+.headerNavLink--app.isActive {
+  color: var(--color-primary);
+  background: transparent;
+  font-weight: 700;
+}
+
+.headerNavLink--app.isActive::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.headerProfileButton--app {
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 6px 0 4px;
+  border-color: transparent;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.headerProfileButton--app:hover {
+  border-color: var(--color-border);
+  background: rgba(15, 95, 70, 0.04);
+}
+
+.headerProfileButton--app .headerAvatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .headerProfileButton--app {
+    padding: 0 8px 0 4px;
+  }
+
+  .headerProfileButton--app .headerUserName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    max-width: 10ch;
+  }
+}
+
+@media (min-width: 1024px) {
+  .headerNav--app {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 12px;
+  }
+
+  .siteHeaderInner--app {
+    position: relative;
+  }
+
+  .headerNavLink--app {
+    padding: 0 14px;
+  }
+
+  .headerNavLink--app.isActive::after {
+    left: 14px;
+    right: 14px;
+    bottom: 10px;
+  }
+}

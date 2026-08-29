@@ -29,11 +29,10 @@ export default function RequireAuth({ children }) {
           aria-labelledby="auth-gate-title"
         >
           <h2 id="auth-gate-title" className="authGateTitle">
-            라이브러리
+            로그인이 필요합니다
           </h2>
           <p className="authGateHint">
-            라이브러리는 로그인 후 이용해 주세요. 내 문장 세트와 폴더를 보려면 아래에서
-            로그인해 주세요.
+            이 페이지는 로그인 후 이용할 수 있습니다. 아래에서 로그인해 주세요.
           </p>
           <div className="authGateActions">
             <button

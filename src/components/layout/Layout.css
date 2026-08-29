@@ -5,6 +5,10 @@
   background: var(--color-background);
 }
 
+.layoutShell--app {
+  background: #faf9f6;
+}
+
 .layoutMain {
   flex: 1;
   padding: 16px 0 24px;

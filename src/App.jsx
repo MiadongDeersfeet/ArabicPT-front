@@ -5,6 +5,7 @@ import RequireAuth from './components/auth/RequireAuth.jsx'
 import Layout from './components/layout/Layout.jsx'
 import StudyLayout from './components/layout/StudyLayout.jsx'
 import Home from './pages/Home.jsx'
+import Learn from './pages/Learn.jsx'
 import Login from './pages/Login.jsx'
 import AuthCallback from './pages/AuthCallback.jsx'
 import Library from './pages/Library.jsx'
@@ -32,6 +33,16 @@ function App() {
         element={
           <Layout>
             <Home />
+          </Layout>
+        }
+      />
+      <Route
+        path="/learn"
+        element={
+          <Layout>
+            <RequireAuth>
+              <Learn />
+            </RequireAuth>
           </Layout>
         }
       />

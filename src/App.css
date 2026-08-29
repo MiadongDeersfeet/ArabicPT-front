@@ -411,27 +411,6 @@ a.primaryButton {
   line-height: 1.4;
 }
 
-.homeIntroCard {
-  text-align: center;
-  padding: 24px 16px;
-}
-
-.homeIntroCard h2 {
-  margin: 0 0 8px;
-}
-
-.homeIntroCard p {
-  margin: 0 0 20px;
-  color: #374151;
-  line-height: 1.5;
-}
-
-.homeLibraryButton {
-  display: inline-flex;
-  min-width: min(100%, 280px);
-  justify-content: center;
-}
-
 .learningCardLink {
   text-decoration: none;
   color: inherit;

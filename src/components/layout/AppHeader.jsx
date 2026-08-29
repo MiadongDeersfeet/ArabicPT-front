@@ -13,6 +13,7 @@ import useMenuDismiss from './useMenuDismiss.js'
  */
 const APP_NAV = [
   { label: '홈', to: '/', end: true, ready: true },
+  { label: '학습', to: '/learn', ready: true },
   { label: '라이브러리', to: '/library', ready: true },
   { label: '로드맵', to: '/roadmap', ready: false },
   { label: '복습', to: '/review', ready: false },
@@ -55,18 +56,18 @@ function AppHeader({ auth, onLogout }) {
   )
 
   return (
-    <header className="siteHeader" ref={containerRef}>
-      <div className="container siteHeaderInner">
+    <header className="siteHeader siteHeader--app" ref={containerRef}>
+      <div className="container siteHeaderInner siteHeaderInner--app">
         <BrandLogo />
 
-        <nav className="headerNav" aria-label="주요 메뉴">
+        <nav className="headerNav headerNav--app" aria-label="주요 메뉴">
           {VISIBLE_APP_NAV.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `headerNavLink${isActive ? ' isActive' : ''}`
+                `headerNavLink headerNavLink--app${isActive ? ' isActive' : ''}`
               }
             >
               {item.label}
@@ -84,7 +85,7 @@ function AppHeader({ auth, onLogout }) {
             <button
               type="button"
               ref={triggerRef}
-              className="headerProfileButton"
+              className="headerProfileButton headerProfileButton--app"
               aria-label={`${displayName} 계정 메뉴`}
               aria-haspopup="menu"
               aria-expanded={isOpen}
